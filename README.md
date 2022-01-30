@@ -1,2 +1,2 @@
 # SDE_CTC_2021
-Save CTC list for reference.
+Web scraping using placement.iitm.ac.in using Python
