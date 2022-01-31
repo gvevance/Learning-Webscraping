@@ -1,2 +1,2 @@
-# SDE_CTC_2021
-Web scraping using placement.iitm.ac.in using Python
+# webscraping projects
+Web scraping projects using Python. 
