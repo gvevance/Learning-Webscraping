@@ -16,14 +16,28 @@ from bs4 import BeautifulSoup
 
 login_page = 'https://placement.iitm.ac.in/students/login.php'
 picklefile = "profiles.pkl"
-payload = {
-        'rollno' : 'ee17b105' ,
-        'pass'   : 'pen-paper-movie@20-21' ,
-        'submit' : 'Login'
-}
+credfile = "placements_ID.txt"
+
+
+def getCredentials():
+
+    with open(credfile) as cfile :
+        username = cfile.readline().strip()
+        password = cfile.readline().strip()
+
+    return username , password
+
 
 def main():
     
+    username,password = getCredentials()
+    
+    payload = {
+        'rollno' : username ,
+        'pass'   : password ,
+        'submit' : 'Login'
+    }
+
     link_dict = {} 
     with requests.Session() as s :
         
@@ -38,8 +52,13 @@ def main():
         count = 0
         for result in soup.find_all("a",onclick='OpenPopup(this.href); return false'):
             
+            # --------------------------------- remove -------------------------------------
             count = count + 1
-            print(count)
+            
+            if count > 3 :
+                continue
+            # -------------------------------------------------------------------------------
+
             source = s.get(str1+result['href']).text
             soup = BeautifulSoup(source,'lxml')
 
