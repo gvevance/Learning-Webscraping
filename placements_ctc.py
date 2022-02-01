@@ -11,20 +11,20 @@
 # Step 3 - Loop through relevant job profiles. Click on each profile and retrieve details (simulate it).
 # Step 4 - Store it in a database or something similar (learn databases)
 
-import numpy as np
 import requests
 from bs4 import BeautifulSoup
 
 login_page = 'https://placement.iitm.ac.in/students/login.php'
-
-def main():
-    
-    payload = {
+picklefile = "profiles.pkl"
+payload = {
         'rollno' : 'ee17b105' ,
         'pass'   : 'pen-paper-movie@20-21' ,
         'submit' : 'Login'
-    }
+}
+
+def main():
     
+    link_dict = {} 
     with requests.Session() as s :
         
         s.post(login_page,data=payload).text
@@ -34,16 +34,13 @@ def main():
         source = s.get(url_all_companies).text
         soup = BeautifulSoup(source,'lxml')
         str1 = 'https://placement.iitm.ac.in/students/'
-        links = []
         
-        for item in soup.find_all("a",onclick='OpenPopup(this.href); return false'):
-            links.append(str1+item['href'])
-
-        i = 545
-
-        for i in range(544,548):
-
-            source = s.get(links[i]).text
+        count = 0
+        for result in soup.find_all("a",onclick='OpenPopup(this.href); return false'):
+            
+            count = count + 1
+            print(count)
+            source = s.get(str1+result['href']).text
             soup = BeautifulSoup(source,'lxml')
 
             '''
@@ -82,7 +79,18 @@ def main():
                     print(f"Others - {others}")
                 print("")
 
+            link_dict[soup.find("td",width="80%").text.strip()] = str1+result['href']
+            # storing title as key and link as value
+        
+        # testing speed of solution to see if it's enough
+        query = input("Enter query to search for : ")
 
+        for key in link_dict :
+            if query in key :
+                source = s.get(link_dict[key]).text
+                soup = BeautifulSoup(source,'lxml')
+                print(soup.find("td",width="80%").text.strip())
+                print()
 
 
 if __name__ == "__main__" :
