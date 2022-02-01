@@ -7,8 +7,8 @@
 # Reference 5 - https://www.geeksforgeeks.org/navigation-with-beautifulsoup/
 
 # Step 1 - Figure out login page. Login into portal.
-# Step 2 - click companies hyperlink and go to the next page
-# Step 3 - Loop through relevant job profiles. Click on each profile and retrieve details.
+# Step 2 - Simulate click companies hyperlink and go to the next page (or find out how to, in requests library)
+# Step 3 - Loop through relevant job profiles. Click on each profile and retrieve details (simulate it).
 # Step 4 - Store it in a database or something similar (learn databases)
 
 import numpy as np
@@ -53,23 +53,26 @@ def main():
             nature of profile - td height="32" align="right"
 
             '''
-            # print title
+            # print title, designation, nature of offer ( Domestic / International )
             print(soup.find("td",width="80%").text.strip())
             print(soup.find("td",width="377").text.strip())
             print(soup.find("td",valign="top",width="380").text.strip())
             print()
 
-
             tempsoup = soup.body.find("table",border=1)
-            for item in tempsoup.tr.find_next_siblings():
+            for item in tempsoup.tr.find_next_siblings():   
+            # The first tr tag is the titles of the table. Get all the "next siblings" (same level) with the tr tag
                 branch = item.find("td",width="20%").text
                 ctc = item.find("td",width="14%").text
                 gross_taxable = item.find("td",width="13%").text
                 fixed_basic_pay = item.find("td",width="16%").text
                 others = item.find("td",width="16%").find_next_sibling().text
+                # "fixed pay" and "others" have the same tags so used find_next_sibling() on the first occurrence ...
+                # (fixed pay column) to get the second one (others column) '''
                 
                 print(f"Branch - {branch}")
-                if ctc :
+                if ctc :   
+                # Logic : if ctc is not empty, print it (some companies don't fill some details)
                     print(f"CTC - {ctc}")
                 if gross_taxable :
                     print(f"Gross Taxable Income - {gross_taxable}")
