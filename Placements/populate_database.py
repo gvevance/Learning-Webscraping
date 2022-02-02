@@ -70,8 +70,28 @@ def extract_details(session,result):
     return title,designation,offer_nature,payslabs
 
 
+def init_db(rewrite):
+    ''' initialise database. If it is being rewritten, delete old file.'''
+
+    if rewrite :
+        open(database,"w").close()
+
+    dbfile = open(database,"w+")
+    conn = sqlite3.connect(dbfile)
+    c = conn.cursor()
+
+    c.execute('''CREATE TABLE profiles(
+            Title text ,
+            Designation text ,
+            "Nature of Offer" text 
+            )''')
+    return conn , c
+
+
 def update_db(title,designation,offer_nature,payslabs):
-    pass
+    
+    conn = sqlite3.connect(database)
+    c = conn.cursor()
 
 
 def main():
@@ -98,12 +118,19 @@ def main():
         if exists(database) :
             choice = input(f"Database {database} already exists. Rewrite ? (yes/no) : ")
 
-        if choice == "yes" :
+            if choice == "yes" :
+                conn , c = init_db(rewrite=True)   # initialise database after deleting old file
+                for result in soup.find_all("a",onclick='OpenPopup(this.href); return false'):  # all profile links have this tag
+                    title,designation,offer_nature,payslabs = extract_details(session,result)
+                    update_db(title,designation,offer_nature,payslabs)
+            else :
+                exit()
+
+        else :
+            conn , c = init_db(rewrite=False)   # initialise database from scratch
             for result in soup.find_all("a",onclick='OpenPopup(this.href); return false'):  # all profile links have this tag
                 title,designation,offer_nature,payslabs = extract_details(session,result)
                 update_db(title,designation,offer_nature,payslabs)
-        else :
-            exit()
 
 
 if __name__ == "__main__" :
