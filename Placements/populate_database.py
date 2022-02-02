@@ -14,13 +14,15 @@
 # TODO : POPULATE A DATABASE (SQLITE)
 # TODO : EXTRACT ELIGIBILITY (BRANCHES OPEN TO)
 
-from numpy import fix
 import requests
 from bs4 import BeautifulSoup
+from os.path import exists
+import sqlite3
 
 login_page = 'https://placement.iitm.ac.in/students/login.php'
 picklefile = "profiles.pkl"
 credfile = "placements_ID.txt"
+database = "placements.db"
 
 
 def getCredentials():
@@ -68,8 +70,13 @@ def extract_details(session,result):
     return title,designation,offer_nature,payslabs
 
 
+def update_db(title,designation,offer_nature,payslabs):
+    pass
+
+
 def main():
     
+    # step 1
     username,password = getCredentials()
     
     payload = {
@@ -78,19 +85,26 @@ def main():
         'submit' : 'Login'
     }
 
+    # step 2 - open session
     with requests.Session() as session :
         
-        session.post(login_page,data=payload).text
+        session.post(login_page,data=payload).text      # login [look up Reference 3]
 
         # get URLs of all profiles
         url_all_companies = 'https://placement.iitm.ac.in/students/comp_list_all.php'   # link to get to all companies
         source = session.get(url_all_companies).text        # return html of the URL
         soup = BeautifulSoup(source,'lxml')                 # send to Beuatifulsoup to parse it
         
-        for result in soup.find_all("a",onclick='OpenPopup(this.href); return false'):  # all profile links have this tag
-            
-            title,designation,offer_nature,payslabs = extract_details(session,result)
-            update_db(title,designation,offer_nature,payslabs)
+        if exists(database) :
+            choice = input(f"Database {database} already exists. Rewrite ? (yes/no) : ")
+
+        if choice == "yes" :
+            for result in soup.find_all("a",onclick='OpenPopup(this.href); return false'):  # all profile links have this tag
+                title,designation,offer_nature,payslabs = extract_details(session,result)
+                update_db(title,designation,offer_nature,payslabs)
+        else :
+            exit()
+
 
 if __name__ == "__main__" :
     main()
