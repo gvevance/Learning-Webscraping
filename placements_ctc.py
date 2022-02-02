@@ -11,6 +11,10 @@
 # Step 3 - Loop through relevant job profiles. Click on each profile and retrieve details (simulate it).
 # Step 4 - Store it in a database or something similar (learn databases)
 
+# TODO : POPULATE A DATABASE (SQLITE)
+# TODO : EXTRACT ELIGIBILITY (BRANCHES OPEN TO)
+
+from numpy import fix
 import requests
 from bs4 import BeautifulSoup
 
@@ -28,6 +32,42 @@ def getCredentials():
     return username , password
 
 
+def extract_details(session,result):
+    
+    str1 = 'https://placement.iitm.ac.in/students/'
+    source = session.get(str1+result['href']).text
+    soup = BeautifulSoup(source,'lxml')
+
+    '''
+    title - td,width="80%"
+    job designation - td width="377"
+    type of offer - td valign="top" width="380"
+    nature of profile - td height="32" align="right"
+
+    '''
+
+    title = soup.find("td",width="80%").text.strip()
+    designation = soup.find("td",width="377").text.strip()
+    offer_nature = soup.find("td",valign="top",width="380").text.strip()
+
+    tempsoup = soup.body.find("table",border=1)
+    payslabs = []
+    for item in tempsoup.tr.find_next_siblings():   
+    # The first tr tag is the titles of the table. Get all the "next siblings" (same level) with the tr tag
+        
+        degree = item.find("td",width="20%").text
+        ctc = item.find("td",width="14%").text
+        gross_taxable = item.find("td",width="13%").text
+        fixed_basic_pay = item.find("td",width="16%").text
+        others = item.find("td",width="16%").find_next_sibling().text
+        # "fixed pay" and "others" have the same tags so used find_next_sibling() on the first occurrence ...
+        # (fixed pay column) to get the second one (others column) '''
+        
+        payslabs.append((degree,ctc,gross_taxable,fixed_basic_pay,others))
+
+    return title,designation,offer_nature,payslabs
+
+
 def main():
     
     username,password = getCredentials()
@@ -38,79 +78,19 @@ def main():
         'submit' : 'Login'
     }
 
-    link_dict = {} 
-    with requests.Session() as s :
+    with requests.Session() as session :
         
-        s.post(login_page,data=payload).text
+        session.post(login_page,data=payload).text
 
-        # get links of all profiles
-        url_all_companies = 'https://placement.iitm.ac.in/students/comp_list_all.php'
-        source = s.get(url_all_companies).text
-        soup = BeautifulSoup(source,'lxml')
-        str1 = 'https://placement.iitm.ac.in/students/'
+        # get URLs of all profiles
+        url_all_companies = 'https://placement.iitm.ac.in/students/comp_list_all.php'   # link to get to all companies
+        source = session.get(url_all_companies).text        # return html of the URL
+        soup = BeautifulSoup(source,'lxml')                 # send to Beuatifulsoup to parse it
         
-        count = 0
-        for result in soup.find_all("a",onclick='OpenPopup(this.href); return false'):
+        for result in soup.find_all("a",onclick='OpenPopup(this.href); return false'):  # all profile links have this tag
             
-            # --------------------------------- remove -------------------------------------
-            count = count + 1
-            
-            if count > 3 :
-                continue
-            # -------------------------------------------------------------------------------
-
-            source = s.get(str1+result['href']).text
-            soup = BeautifulSoup(source,'lxml')
-
-            '''
-            title - td,width="80%"
-            job designation - td width="377"
-            type of offer - td valign="top" width="380"
-            nature of profile - td height="32" align="right"
-
-            '''
-            # print title, designation, nature of offer ( Domestic / International )
-            print(soup.find("td",width="80%").text.strip())
-            print(soup.find("td",width="377").text.strip())
-            print(soup.find("td",valign="top",width="380").text.strip())
-            print()
-
-            tempsoup = soup.body.find("table",border=1)
-            for item in tempsoup.tr.find_next_siblings():   
-            # The first tr tag is the titles of the table. Get all the "next siblings" (same level) with the tr tag
-                branch = item.find("td",width="20%").text
-                ctc = item.find("td",width="14%").text
-                gross_taxable = item.find("td",width="13%").text
-                fixed_basic_pay = item.find("td",width="16%").text
-                others = item.find("td",width="16%").find_next_sibling().text
-                # "fixed pay" and "others" have the same tags so used find_next_sibling() on the first occurrence ...
-                # (fixed pay column) to get the second one (others column) '''
-                
-                print(f"Branch - {branch}")
-                if ctc :   
-                # Logic : if ctc is not empty, print it (some companies don't fill some details)
-                    print(f"CTC - {ctc}")
-                if gross_taxable :
-                    print(f"Gross Taxable Income - {gross_taxable}")
-                if fixed_basic_pay :
-                    print(f"Fixed Basic Pay - {fixed_basic_pay}")
-                if others :
-                    print(f"Others - {others}")
-                print("")
-
-            link_dict[soup.find("td",width="80%").text.strip()] = str1+result['href']
-            # storing title as key and link as value
-        
-        # testing speed of solution to see if it's enough
-        query = input("Enter query to search for : ")
-
-        for key in link_dict :
-            if query in key :
-                source = s.get(link_dict[key]).text
-                soup = BeautifulSoup(source,'lxml')
-                print(soup.find("td",width="80%").text.strip())
-                print()
-
+            title,designation,offer_nature,payslabs = extract_details(session,result)
+            update_db(title,designation,offer_nature,payslabs)
 
 if __name__ == "__main__" :
     main()
