@@ -25,6 +25,16 @@ credfile = "placements_ID.txt"
 database = "placements.db"
 
 
+class abc :
+
+    def __init__(self) :
+        self.title = "Title"
+        self.designation = "Designation"
+        self.offer_nature = "Nature of Offer"
+        self.elig_slabs = {}
+
+    
+
 def getCredentials():
 
     with open(credfile) as cfile :
@@ -52,8 +62,13 @@ def extract_details(session,result):
     designation = soup.find("td",width="377").text.strip()
     offer_nature = soup.find("td",valign="top",width="380").text.strip()
 
+    # Extracting eligible branches and degrees information
+    res = soup.find_all("table",cellpadding="0",cellspacing="0",width="690")
+    print(title)
+
+    '''
+    # Extracting CTC related information
     tempsoup = soup.body.find("table",border=1)
-    payslabs = []
     for item in tempsoup.tr.find_next_siblings():   
     # The first tr tag is the titles of the table. Get all the "next siblings" (same level) with the tr tag
         
@@ -63,35 +78,8 @@ def extract_details(session,result):
         fixed_basic_pay = item.find("td",width="16%").text
         others = item.find("td",width="16%").find_next_sibling().text
         # "fixed pay" and "others" have the same tags so used find_next_sibling() on the first occurrence ...
-        # (fixed pay column) to get the second one (others column) '''
-        
-        payslabs.append((degree,ctc,gross_taxable,fixed_basic_pay,others))
-
-    return title,designation,offer_nature,payslabs
-
-
-def init_db(rewrite):
-    ''' initialise database. If it is being rewritten, delete old file.'''
-
-    if rewrite :
-        open(database,"w").close()
-
-    dbfile = open(database,"w+")
-    conn = sqlite3.connect(dbfile)
-    c = conn.cursor()
-
-    c.execute('''CREATE TABLE profiles(
-            Title text ,
-            Designation text ,
-            "Nature of Offer" text 
-            )''')
-    return conn , c
-
-
-def update_db(title,designation,offer_nature,payslabs):
-    
-    conn = sqlite3.connect(database)
-    c = conn.cursor()
+        # (fixed pay column) to get the second one (others column)
+    '''
 
 
 def main():
@@ -115,23 +103,16 @@ def main():
         source = session.get(url_all_companies).text        # return html of the URL
         soup = BeautifulSoup(source,'lxml')                 # send to Beuatifulsoup to parse it
         
-        if exists(database) :
-            choice = input(f"Database {database} already exists. Rewrite ? (yes/no) : ")
+        # ------------------ remove ---------------------------
+        result = soup.find_all("a",onclick='OpenPopup(this.href); return false')[350]
+        extract_details(session,result)
+        # ------------------ remove ---------------------------
 
-            if choice == "yes" :
-                conn , c = init_db(rewrite=True)   # initialise database after deleting old file
-                for result in soup.find_all("a",onclick='OpenPopup(this.href); return false'):  # all profile links have this tag
-                    title,designation,offer_nature,payslabs = extract_details(session,result)
-                    update_db(title,designation,offer_nature,payslabs)
-            else :
-                exit()
-
-        else :
-            conn , c = init_db(rewrite=False)   # initialise database from scratch
-            for result in soup.find_all("a",onclick='OpenPopup(this.href); return false'):  # all profile links have this tag
-                title,designation,offer_nature,payslabs = extract_details(session,result)
-                update_db(title,designation,offer_nature,payslabs)
-
+        '''
+        for result in soup.find_all("a",onclick='OpenPopup(this.href); return false'):  # all profile links have this tag
+            title,designation,offer_nature,payslabs = extract_details(session,result)
+            print(title)
+        '''
 
 if __name__ == "__main__" :
     main()
