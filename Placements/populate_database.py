@@ -62,13 +62,21 @@ def extract_details(session,result):
     designation = soup.find("td",width="377").text.strip()
     offer_nature = soup.find("td",valign="top",width="380").text.strip()
 
-    # Extracting eligible branches and degrees information
-    res = soup.find_all("table",cellpadding="0",cellspacing="0",width="690")
-    print(title)
+    # Extracting eligible branches and degrees information - must be done separately since the html is all messed up
+    elig_results = soup.find("table",cellpadding="0",cellspacing="0",width="690")   # list
+    
+        
+    # Undergrad
 
-    '''
+    # Postgrad
+
+    # Doctorate
+
+
+
     # Extracting CTC related information
     tempsoup = soup.body.find("table",border=1)
+    payslabs = []
     for item in tempsoup.tr.find_next_siblings():   
     # The first tr tag is the titles of the table. Get all the "next siblings" (same level) with the tr tag
         
@@ -79,7 +87,9 @@ def extract_details(session,result):
         others = item.find("td",width="16%").find_next_sibling().text
         # "fixed pay" and "others" have the same tags so used find_next_sibling() on the first occurrence ...
         # (fixed pay column) to get the second one (others column)
-    '''
+        payslabs.append((degree,ctc,gross_taxable,fixed_basic_pay,others))
+    
+    return title,designation,offer_nature,payslabs
 
 
 def main():
@@ -102,17 +112,24 @@ def main():
         url_all_companies = 'https://placement.iitm.ac.in/students/comp_list_all.php'   # link to get to all companies
         source = session.get(url_all_companies).text        # return html of the URL
         soup = BeautifulSoup(source,'lxml')                 # send to Beuatifulsoup to parse it
-        
+
         # ------------------ remove ---------------------------
         result = soup.find_all("a",onclick='OpenPopup(this.href); return false')[350]
         extract_details(session,result)
         # ------------------ remove ---------------------------
 
+
+
         '''
         for result in soup.find_all("a",onclick='OpenPopup(this.href); return false'):  # all profile links have this tag
             title,designation,offer_nature,payslabs = extract_details(session,result)
-            print(title)
+            print(f"{title}")
+            for item in payslabs :
+                print(f"{item[0]} ",end='* ')
+            print()
         '''
+        
+
 
 if __name__ == "__main__" :
     main()
