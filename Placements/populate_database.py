@@ -89,11 +89,11 @@ def extract_details(session,result):
             for res2 in res.find_all("tr"):
                 if res2.find("p"):
                     if res2.p.text.strip().endswith("[M.S]"):
-                        MS_list = res2.p.text.strip('*')[1:]
-                        MS_branches = [i.strip() for i in MS_list]
+                        MS_list = res2.p.text.split("*")[1:]
+                        MS_branches = [i.strip() for i in MS_list if i.strip().endswith("[M.S]")]
                         payslabs["M.S"].append(MS_branches)
-                        print("DD : ",end='')
-                        print(MS_branches)
+                        # print("MS : ",end='')
+                        # print(MS_branches)
 
     
     if "Dual Degree" in payslabs:
