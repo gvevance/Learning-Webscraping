@@ -36,12 +36,10 @@ def getCredentials():
 
 
 def extract_details(session,result):
-    
-    # todo : add currency type to payslabs.
 
     str1 = 'https://placement.iitm.ac.in/students/'
     source = session.get(str1+result['href']).text
-    soup = BeautifulSoup(source,'lxml')
+    soup = BeautifulSoup(source,'html.parser')
 
     '''
     title - td,width="80%"
@@ -54,6 +52,7 @@ def extract_details(session,result):
     title = soup.find("td",width="80%").text.strip()
     designation = soup.find("td",width="377").text.strip()
     offer_nature = soup.find("td",valign="top",width="380").text.strip()
+    currency = soup.find("td",width="464",valign="top").text
 
     # Extracting CTC related information
     tempsoup = soup.body.find("table",border=1)
@@ -68,12 +67,16 @@ def extract_details(session,result):
         others = item.find("td",width="16%").find_next_sibling().text
         # "fixed pay" and "others" have the same tags so used find_next_sibling() on the first occurrence ...
         # (fixed pay column) to get the second one (others column)
-        payslabs[degree]=[ctc,gross_taxable,fixed_basic_pay,others]
+        payslabs[degree]=[currency,ctc,gross_taxable,fixed_basic_pay,others]
     
     # code to extract branches within each degree
     
     if "MTech" in payslabs:
-        pass
+        for res in soup.find_all("table",cellpadding="0",cellspacing="0",width="690"):
+            if res.b.text == "Post Graduate Degree" and res.b.find_next("b").text == "M.Tech / M.S":
+                MTech_list = res.find_next("p").text.split('*')[1:]
+                MTech_branches = [i.strip() for i in MTech_list]
+                payslabs["MTech"].append(MTech_branches)
 
     if "M.B.A." in payslabs:
         pass
@@ -82,7 +85,12 @@ def extract_details(session,result):
         pass
     
     if "Dual Degree" in payslabs:
-        pass
+        for res in soup.find_all("table",cellpadding="0",cellspacing="0",width="690"):
+            if res.b.text == "Post Graduate Degree" and res.b.find_next("b").text == "Dual Degree*":
+                DD_list = res.find_next("p").text.split('*')[1:]
+                DD_branches = [i.strip() for i in DD_list]
+                payslabs["Dual Degree"].append(DD_branches)
+        
     
     if "Ph.D." in payslabs:
         pass
@@ -138,13 +146,13 @@ def main():
         # get URLs of all profiles
         url_all_companies = 'https://placement.iitm.ac.in/students/comp_list_all.php'   # link to get to all companies
         source = session.get(url_all_companies).text        # return html of the URL
-        soup = BeautifulSoup(source,'lxml')                 # send to Beuatifulsoup to parse it
+        soup = BeautifulSoup(source,'html.parser')                 # send to Beuatifulsoup to parse it
 
         testing = False
         
         if testing :
 
-            result = soup.find_all("a",onclick='OpenPopup(this.href); return false')[329]
+            result = soup.find_all("a",onclick='OpenPopup(this.href); return false')[14]
             title,designation,offer_nature,payslabs = extract_details(session,result)
             print(f"{title}")
 
