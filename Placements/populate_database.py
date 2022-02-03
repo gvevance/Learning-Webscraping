@@ -24,16 +24,6 @@ login_page = 'https://placement.iitm.ac.in/students/login.php'
 picklefile = "profiles.pkl"
 credfile = "placements_ID.txt"
 database = "placements.db"
-
-
-class abc :
-
-    def __init__(self) :
-        self.title = "Title"
-        self.designation = "Designation"
-        self.offer_nature = "Nature of Offer"
-        self.elig_slabs = {}
-
     
 
 def getCredentials():
@@ -84,25 +74,34 @@ def extract_details(session,result):
     
     if "MTech" in payslabs:
         pass
+
     if "M.B.A." in payslabs:
         pass
+    
     if "M.S" in payslabs:
         pass
+    
     if "Dual Degree" in payslabs:
         pass
+    
     if "Ph.D." in payslabs:
         pass
+    
     if "M.A." in payslabs:
         pass
+    
     if "BTech" in payslabs:
-        pass
+        btech_list= soup.find("table",cellpadding="0",cellspacing="0",width="690").p.text.split('*')[1:]
+        btech_branches = [i.strip() for i in btech_list]
+        payslabs["BTech"].append(btech_branches)
+    
     if "M.Sc." in payslabs:
         pass
 
     return title,designation,offer_nature,payslabs
 
 
-def save(payslabs):
+def save_testing(payslabs):
     ''' dummy function for testing '''
     
     f = "test_pickle.pkl"
@@ -141,29 +140,21 @@ def main():
         source = session.get(url_all_companies).text        # return html of the URL
         soup = BeautifulSoup(source,'lxml')                 # send to Beuatifulsoup to parse it
 
-        testing = True
+        testing = False
         
         if testing :
 
             result = soup.find_all("a",onclick='OpenPopup(this.href); return false')[329]
             title,designation,offer_nature,payslabs = extract_details(session,result)
-            save(payslabs)
             print(f"{title}")
-            # for item in payslabs :
-            #     print(f"* {item}",end=' ')
-            # print("\n")
+
         
         else :
 
             for result in soup.find_all("a",onclick='OpenPopup(this.href); return false'):  # all profile links have this tag
                 title,designation,offer_nature,payslabs = extract_details(session,result)
-                save(payslabs)
                 print(f"{title}")
-                # for item in payslabs :
-                #     print(f"* {item}",end=' ')
-                # print("\n")
+
         
-
-
 if __name__ == "__main__" :
     main()
