@@ -18,6 +18,7 @@ import requests
 from bs4 import BeautifulSoup
 from os.path import exists
 import sqlite3
+import pickle
 
 login_page = 'https://placement.iitm.ac.in/students/login.php'
 picklefile = "profiles.pkl"
@@ -46,6 +47,8 @@ def getCredentials():
 
 def extract_details(session,result):
     
+    # todo : add currency type to payslabs.
+
     str1 = 'https://placement.iitm.ac.in/students/'
     source = session.get(str1+result['href']).text
     soup = BeautifulSoup(source,'lxml')
@@ -62,34 +65,59 @@ def extract_details(session,result):
     designation = soup.find("td",width="377").text.strip()
     offer_nature = soup.find("td",valign="top",width="380").text.strip()
 
-    # Extracting eligible branches and degrees information - must be done separately since the html is all messed up
-    elig_results = soup.find("table",cellpadding="0",cellspacing="0",width="690")   # list
-    
-        
-    # Undergrad
-
-    # Postgrad
-
-    # Doctorate
-
-
-
     # Extracting CTC related information
     tempsoup = soup.body.find("table",border=1)
-    payslabs = []
+    payslabs = {}
     for item in tempsoup.tr.find_next_siblings():   
     # The first tr tag is the titles of the table. Get all the "next siblings" (same level) with the tr tag
         
-        degree = item.find("td",width="20%").text
+        degree = item.find("td",width="20%").text.strip()
         ctc = item.find("td",width="14%").text
         gross_taxable = item.find("td",width="13%").text
         fixed_basic_pay = item.find("td",width="16%").text
         others = item.find("td",width="16%").find_next_sibling().text
         # "fixed pay" and "others" have the same tags so used find_next_sibling() on the first occurrence ...
         # (fixed pay column) to get the second one (others column)
-        payslabs.append((degree,ctc,gross_taxable,fixed_basic_pay,others))
+        payslabs[degree]=[ctc,gross_taxable,fixed_basic_pay,others]
     
+    # code to extract branches within each degree
+    
+    if "MTech" in payslabs:
+        pass
+    if "M.B.A." in payslabs:
+        pass
+    if "M.S" in payslabs:
+        pass
+    if "Dual Degree" in payslabs:
+        pass
+    if "Ph.D." in payslabs:
+        pass
+    if "M.A." in payslabs:
+        pass
+    if "BTech" in payslabs:
+        pass
+    if "M.Sc." in payslabs:
+        pass
+
     return title,designation,offer_nature,payslabs
+
+
+def save(payslabs):
+    ''' dummy function for testing '''
+    
+    f = "test_pickle.pkl"
+    if exists(f):
+        with open(f,'rb') as pfile :
+            the_set = pickle.load(pfile)
+            # print(type(the_set))
+    else :
+        the_set = set()
+
+    for key in list(payslabs.keys()):
+        the_set.add(key)
+
+    with open(f,'wb+') as pfile:
+        pickle.dump(the_set,pfile)
 
 
 def main():
@@ -113,21 +141,27 @@ def main():
         source = session.get(url_all_companies).text        # return html of the URL
         soup = BeautifulSoup(source,'lxml')                 # send to Beuatifulsoup to parse it
 
-        # ------------------ remove ---------------------------
-        result = soup.find_all("a",onclick='OpenPopup(this.href); return false')[350]
-        extract_details(session,result)
-        # ------------------ remove ---------------------------
+        testing = True
+        
+        if testing :
 
-
-
-        '''
-        for result in soup.find_all("a",onclick='OpenPopup(this.href); return false'):  # all profile links have this tag
+            result = soup.find_all("a",onclick='OpenPopup(this.href); return false')[329]
             title,designation,offer_nature,payslabs = extract_details(session,result)
+            save(payslabs)
             print(f"{title}")
-            for item in payslabs :
-                print(f"{item[0]} ",end='* ')
-            print()
-        '''
+            # for item in payslabs :
+            #     print(f"* {item}",end=' ')
+            # print("\n")
+        
+        else :
+
+            for result in soup.find_all("a",onclick='OpenPopup(this.href); return false'):  # all profile links have this tag
+                title,designation,offer_nature,payslabs = extract_details(session,result)
+                save(payslabs)
+                print(f"{title}")
+                # for item in payslabs :
+                #     print(f"* {item}",end=' ')
+                # print("\n")
         
 
 
