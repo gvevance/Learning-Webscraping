@@ -16,9 +16,6 @@
 
 import requests
 from bs4 import BeautifulSoup
-from os.path import exists
-import sqlite3
-import pickle
 
 login_page = 'https://placement.iitm.ac.in/students/login.php'
 picklefile = "profiles.pkl"
@@ -96,7 +93,11 @@ def extract_details(session,result):
                 payslabs["Dual Degree"].append(DD_branches)
         
     if "Ph.D." in payslabs:
-        pass
+        for res in soup.find_all("table",cellpadding="0",cellspacing="0",width="690"):
+            if res.b.text == "Ph.D" :
+                PhD_list = res.find_next("td",valign="top").text.split('*')[1:]
+                PhD_branches = [i.strip() for i in PhD_list]
+                payslabs["Ph.D."].append(PhD_branches)
     
     if "M.A." in payslabs:
         pass
@@ -110,24 +111,6 @@ def extract_details(session,result):
         pass
 
     return title,designation,offer_nature,payslabs
-
-
-def save_testing(payslabs):
-    ''' dummy function for testing '''
-    
-    f = "test_pickle.pkl"
-    if exists(f):
-        with open(f,'rb') as pfile :
-            the_set = pickle.load(pfile)
-            # print(type(the_set))
-    else :
-        the_set = set()
-
-    for key in list(payslabs.keys()):
-        the_set.add(key)
-
-    with open(f,'wb+') as pfile:
-        pickle.dump(the_set,pfile)
 
 
 def main():
