@@ -75,14 +75,18 @@ def extract_details(session,result):
         for res in soup.find_all("table",cellpadding="0",cellspacing="0",width="690"):
             if res.b.text == "Post Graduate Degree" and res.b.find_next("b").text == "M.Tech / M.S":
                 MTech_list = res.find_next("p").text.split('*')[1:]
-                MTech_branches = [i.strip() for i in MTech_list]
+                MTech_branches = [i.strip() for i in MTech_list if i.strip().endswith("[M.Tech]")]
                 payslabs["MTech"].append(MTech_branches)
 
     if "M.B.A." in payslabs:
         pass
     
     if "M.S" in payslabs:
-        pass
+        for res in soup.find_all("table",cellpadding="0",cellspacing="0",width="690"):
+            if res.b.text == "Post Graduate Degree" and res.b.find_next("b").text == "M.Tech / M.S":
+                MS_list = res.find_next("p").text.split('*')[1:]
+                MS_branches = [i.strip() for i in MS_list if i.strip().endswith("[M.S]")]
+                payslabs["M.S"].append(MS_branches)
     
     if "Dual Degree" in payslabs:
         for res in soup.find_all("table",cellpadding="0",cellspacing="0",width="690"):
@@ -91,7 +95,6 @@ def extract_details(session,result):
                 DD_branches = [i.strip() for i in DD_list]
                 payslabs["Dual Degree"].append(DD_branches)
         
-    
     if "Ph.D." in payslabs:
         pass
     
