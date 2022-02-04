@@ -14,6 +14,7 @@
 # TODO : POPULATE A DATABASE (SQLITE)
 # TODO : EXTRACT ELIGIBILITY (BRANCHES OPEN TO)
 
+from re import T
 import requests
 from bs4 import BeautifulSoup
 
@@ -64,7 +65,8 @@ def extract_details(session,result):
         others = item.find("td",width="16%").find_next_sibling().text
         # "fixed pay" and "others" have the same tags so used find_next_sibling() on the first occurrence ...
         # (fixed pay column) to get the second one (others column)
-        payslabs[degree]=[currency,ctc,gross_taxable,fixed_basic_pay,others]
+        if int(ctc) != 0 or int(gross_taxable) != 0 or int(fixed_basic_pay) != 0 :
+            payslabs[degree]=[currency,ctc,gross_taxable,fixed_basic_pay,others]
     
     print(title)
 
@@ -155,12 +157,17 @@ def extract_details(session,result):
                         pass
                     
     if "M.A." in payslabs:
-        pass
-        # for res in soup.find_all("table",cellpadding="0",cellspacing="0",width="690"):
-        #     if res.b.text == "Post Graduate Degree" and res.b.find_next("b").text == "M.Tech / M.S":
-        #         MTech_list = res.find_next("p").text.split('*')[1:]
-        #         MTech_branches = [i.strip() for i in MTech_list if i.strip().endswith("[M.Tech]")]
-        #         payslabs["MTech"].append(MTech_branches)
+        for res in soup.find_all("table",cellpadding="0",cellspacing="0",width="690"):
+            for res2 in res.find_all("tr"):
+                if res2.find("b") and res2.b.text.strip() == "M.A":                   # short-circuiting used
+                    try:                                
+                        MA_list = res2.find_next_sibling().p.text.strip().split('*')[1:]
+                        MA_branches = [i.strip() for i in MA_list]
+                        payslabs["M.B.A."].append(MA_branches)
+                        print("MA : ",end='')
+                        print(MA_branches)
+                    except:
+                        pass
 
     return title,designation,offer_nature,payslabs
 
@@ -186,20 +193,9 @@ def main():
         source = session.get(url_all_companies).text        # return html of the URL
         soup = BeautifulSoup(source,'html.parser')                 # send to Beuatifulsoup to parse it
 
-        testing_single = False
-        
-        if testing_single :
-
-            result = soup.find_all("a",onclick='OpenPopup(this.href); return false')[108]
+        for result in soup.find_all("a",onclick='OpenPopup(this.href); return false'):  # all profile links have this tag
             title,designation,offer_nature,payslabs = extract_details(session,result)
             # print(f"{title}")
-
-        
-        else :
-
-            for result in soup.find_all("a",onclick='OpenPopup(this.href); return false'):  # all profile links have this tag
-                title,designation,offer_nature,payslabs = extract_details(session,result)
-                # print(f"{title}")
 
         
 if __name__ == "__main__" :
