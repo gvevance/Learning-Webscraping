@@ -68,33 +68,12 @@ def extract_details(session,result):
     
     # code to extract branches within each degree
     
-    if "MTech" in payslabs:
-        #! there is an error here. "find_next" is not correct
-        for res in soup.find_all("table",cellpadding="0",cellspacing="0",width="690"):
-            for res2 in res.find_all("tr") :
-                if res2.find('b'):
-                    if res2.b.text == "M.Tech / M.S":
-                        MTech_list = res2.b.find_next("p").text.split('*')[1:]
-                        MTech_branches = [i.strip() for i in MTech_list if i.strip().endswith("[M.Tech]")]
-                        payslabs["MTech"].append(MTech_branches)
-                        # print("MTech : ",end='')
-                        # print(MTech_branches)
-
-    if "M.B.A." in payslabs:
-        pass
-    
-    if "M.S" in payslabs:
-        #! there is an error here. "find_next" is not correct
-        for res in soup.find_all("table",cellpadding="0",cellspacing="0",width="690"):
-            for res2 in res.find_all("tr"):
-                if res2.find("p"):
-                    if res2.p.text.strip().endswith("[M.S]"):
-                        MS_list = res2.p.text.split("*")[1:]
-                        MS_branches = [i.strip() for i in MS_list if i.strip().endswith("[M.S]")]
-                        payslabs["M.S"].append(MS_branches)
-                        # print("MS : ",end='')
-                        # print(MS_branches)
-
+    if "BTech" in payslabs:
+        btech_list= soup.find("table",cellpadding="0",cellspacing="0",width="690").p.text.split('*')[1:]
+        btech_branches = [i.strip() for i in btech_list]
+        payslabs["BTech"].append(btech_branches)
+        # print("BTech : ",end='')
+        # print(btech_branches)
     
     if "Dual Degree" in payslabs:
         for res in soup.find_all("table",cellpadding="0",cellspacing="0",width="690"):
@@ -104,7 +83,27 @@ def extract_details(session,result):
                 payslabs["Dual Degree"].append(DD_branches)
                 # print("DD : ",end='')
                 # print(DD_branches)
-        
+
+    if "MTech" in payslabs:
+        for res in soup.find_all("table",cellpadding="0",cellspacing="0",width="690"):
+            for res2 in res.find_all("tr") :
+                if res2.find('b') and res2.b.text == "M.Tech / M.S":        # short-circuiting used
+                    MTech_list = res2.b.find_next("p").text.split('*')[1:]
+                    MTech_branches = [i.strip() for i in MTech_list if i.strip().endswith("[M.Tech]")]
+                    payslabs["MTech"].append(MTech_branches)
+                    # print("MTech : ",end='')
+                    # print(MTech_branches)
+
+    if "M.S" in payslabs:
+        for res in soup.find_all("table",cellpadding="0",cellspacing="0",width="690"):
+            for res2 in res.find_all("tr"):
+                if res2.find("p") and res2.p.text.strip().endswith("[M.S]"):        # short-circuiting used
+                    MS_list = res2.p.text.split("*")[1:]
+                    MS_branches = [i.strip() for i in MS_list if i.strip().endswith("[M.S]")]
+                    payslabs["M.S"].append(MS_branches)
+                    # print("MS : ",end='')
+                    # print(MS_branches)
+
     if "Ph.D." in payslabs:
         for res in soup.find_all("table",cellpadding="0",cellspacing="0",width="690"):
             if res.b.text == "Ph.D" :
@@ -113,6 +112,19 @@ def extract_details(session,result):
                 payslabs["Ph.D."].append(PhD_branches)
                 # print("PhD : ",end='')
                 # print(PhD_branches)
+
+    if "M.Sc." in payslabs:
+        for res in soup.find_all("table",cellpadding="0",cellspacing="0",width="690"):
+            for res2 in res.find_all("tr"):
+                if res2.find("b") and res2.b.text.strip() == "M.Sc":
+                    MSc_list = res2.find_next_sibling().p.text.strip().split('*')[1:]
+                    MSc_branches = [i.strip() for i in MSc_list]
+                    payslabs["M.Sc."].append(MSc_branches)
+                    # print("MSc : ",end='')
+                    # print(MSc_branches)
+
+    if "M.B.A." in payslabs:
+        pass
     
     if "M.A." in payslabs:
         pass
@@ -121,16 +133,6 @@ def extract_details(session,result):
         #         MTech_list = res.find_next("p").text.split('*')[1:]
         #         MTech_branches = [i.strip() for i in MTech_list if i.strip().endswith("[M.Tech]")]
         #         payslabs["MTech"].append(MTech_branches)
-    
-    if "BTech" in payslabs:
-        btech_list= soup.find("table",cellpadding="0",cellspacing="0",width="690").p.text.split('*')[1:]
-        btech_branches = [i.strip() for i in btech_list]
-        payslabs["BTech"].append(btech_branches)
-        # print("BTech : ",end='')
-        # print(btech_branches)
-    
-    if "M.Sc." in payslabs:
-        pass
 
     return title,designation,offer_nature,payslabs
 
