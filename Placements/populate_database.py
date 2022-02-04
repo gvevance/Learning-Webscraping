@@ -67,8 +67,6 @@ def extract_details(session,result):
         # (fixed pay column) to get the second one (others column)
         if int(ctc) != 0 or int(gross_taxable) != 0 or int(fixed_basic_pay) != 0 :
             payslabs[degree]=[currency,ctc,gross_taxable,fixed_basic_pay,others]
-    
-    print(title)
 
     # code to extract branches within each degree
     
@@ -91,32 +89,39 @@ def extract_details(session,result):
                     # print(DD_branches)
                 except :
                     pass
-
-    if "MTech" in payslabs:
-        for res in soup.find_all("table",cellpadding="0",cellspacing="0",width="690"):
-            for res2 in res.find_all("tr") :
-                if res2.find('b') and res2.b.text == "M.Tech / M.S":                # short-circuiting used
-                    try :
-                        MTech_list = res2.b.find_next("p").text.split('*')[1:]
-                        MTech_branches = [i.strip() for i in MTech_list if i.strip().endswith("[M.Tech]")]
-                        payslabs["MTech"].append(MTech_branches)
-                        # print("MTech : ",end='')
-                        # print(MTech_branches)
-                    except :
-                        pass
-
-    if "M.S" in payslabs:
+                
+    if "MTech" in payslabs :
         for res in soup.find_all("table",cellpadding="0",cellspacing="0",width="690"):
             for res2 in res.find_all("tr"):
-                if res2.find("p") and res2.p.text.strip().endswith("[M.S]"):        # short-circuiting used
+                if res2.find("b") and res2.b.text.strip() == "M.Tech / M.S" :
                     try :
-                        MS_list = res2.p.text.split("*")[1:]
-                        MS_branches = [i.strip() for i in MS_list if i.strip().endswith("[M.S]")]
-                        payslabs["M.S"].append(MS_branches)
-                        # print("MS : ",end='')
-                        # print(MS_branches)
+
+                        MTech_list = res2.find_next_sibling().p.text.strip().split("*")[1:]
+                        MTech_branches = [i.strip() for i in MTech_list]
+                        payslabs["MTech"].append(MTech_branches)
+                        # print("DD : ",end='')
+                        # print(DD_branches)
                     except :
-                        pass
+                        print("Except of Mtech branch")
+            
+    if "M.S" in payslabs :
+        for res in soup.find_all("table",cellpadding="0",cellspacing="0",width="690"):
+            for res2 in res.find_all("tr"):
+                if res2.find("b") and res2.b.text.strip() == "M.Tech / M.S" :
+                    try :
+
+                        MS_list = res2.find_next_sibling().p.text.strip().split("*")[1:]
+                        if len(MS_list) == 1 and MS_list[0].strip() == "All" :
+                            MS_branches = [MS_list[0].strip()]
+                            payslabs["M.S"].append(MS_branches)
+                            # print("MS : ",end='')
+                            # print(MS_branches)
+                        else :
+                            MS_list = res2.find_next_siblings()[1].p.text.strip().split("*")[1:]
+                            MS_branches = [i.strip() for i in MS_list]
+                            payslabs["M.S"].append(MS_branches)                   
+                    except :
+                        print("Except of MS branch")
 
     if "Ph.D." in payslabs:
         for res in soup.find_all("table",cellpadding="0",cellspacing="0",width="690"):
@@ -164,32 +169,45 @@ def extract_details(session,result):
                     try:                                
                         MA_list = res2.find_next_sibling().p.text.strip().split('*')[1:]
                         MA_branches = [i.strip() for i in MA_list]
-                        payslabs["M.B.A."].append(MA_branches)
+                        payslabs["M.A."].append(MA_branches)
                         print("MA : ",end='')
                         print(MA_branches)
                     except:
                         pass
 
-    return title,designation,offer_nature,payslabs
+    missing_data_count = 0
+    for key in payslabs:
+        if len(payslabs[key]) != 6 :
+            missing_data_count += 1
+
+    return title,designation,offer_nature,payslabs,missing_data_count
 
 
 def display(title,designation,offer_nature,payslabs):
+    
     print(f"Title - {title}")
     print(f"Designation - {designation}")
     print(f"Nature of offer - {offer_nature}")
     
     for key in payslabs:
 
-        currency,ctc,gross_taxable,fixed_basic_pay,others,branches = payslabs[key]
-        print(f"Degree : {key}")
+        print(f"\nDegree : {key}")
         print("Eligible for branches : ")
-        for branch in branches:
-            print(f"* {branch}")
-        print(f"\nCTC - {currency} {ctc} ")
-        print(f"Gross Taxable Income - {currency} {gross_taxable}")
-        print(f"Fixed basic pay - {currency} {fixed_basic_pay}")
-        print(f"Others - {others}")
-
+        
+        try :
+            currency,ctc,gross_taxable,fixed_basic_pay,others,branches = payslabs[key]
+            for branch in branches:
+                print(f"* {branch}")
+            print(f"\nCTC - {currency} {ctc} ")
+            print(f"Gross Taxable Income - {currency} {gross_taxable}")
+            print(f"Fixed basic pay - {currency} {fixed_basic_pay}")
+            print(f"Others - {others}")
+        
+        except :
+            # Some discrepency in the data of this company
+            print("Bad data.")
+    
+    print("\n")
 
 def update_database(title,designation,offer_nature,payslabs):
     pass
@@ -216,16 +234,17 @@ def main():
         source = session.get(url_all_companies).text        # return html of the URL
         soup = BeautifulSoup(source,'html.parser')                 # send to Beuatifulsoup to parse it
 
+        count = 0
         verbose = True
-        for result in soup.find_all("a",onclick='OpenPopup(this.href); return false')[-10:]:  # all profile links have this tag
-            title,designation,offer_nature,payslabs = extract_details(session,result)
+        for result in soup.find_all("a",onclick='OpenPopup(this.href); return false'):  # all profile links have this tag
+            title,designation,offer_nature,payslabs,missing_data_count = extract_details(session,result)
+            count += missing_data_count
             if verbose :
                 display(title,designation,offer_nature,payslabs)
             update_database(title,designation,offer_nature,payslabs)
-
-            # testing
-            # print(payslabs)
-
         
+        print(f"Count = {count}")
+
+
 if __name__ == "__main__" :
     main()
