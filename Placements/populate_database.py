@@ -66,6 +66,8 @@ def extract_details(session,result):
         # (fixed pay column) to get the second one (others column)
         payslabs[degree]=[currency,ctc,gross_taxable,fixed_basic_pay,others]
     
+    print(title)
+
     # code to extract branches within each degree
     
     if "BTech" in payslabs:
@@ -78,54 +80,80 @@ def extract_details(session,result):
     if "Dual Degree" in payslabs:
         for res in soup.find_all("table",cellpadding="0",cellspacing="0",width="690"):
             if res.b.text == "Post Graduate Degree" and res.b.find_next("b").text == "Dual Degree*":
-                DD_list = res.find_next("p").text.split('*')[1:]
-                DD_branches = [i.strip() for i in DD_list]
-                payslabs["Dual Degree"].append(DD_branches)
-                # print("DD : ",end='')
-                # print(DD_branches)
+                try :
+                    DD_list = res.find_next("p").text.split('*')[1:]
+                    DD_branches = [i.strip() for i in DD_list]
+                    payslabs["Dual Degree"].append(DD_branches)
+                    # print("DD : ",end='')
+                    # print(DD_branches)
+                except :
+                    pass
 
     if "MTech" in payslabs:
         for res in soup.find_all("table",cellpadding="0",cellspacing="0",width="690"):
             for res2 in res.find_all("tr") :
-                if res2.find('b') and res2.b.text == "M.Tech / M.S":        # short-circuiting used
-                    MTech_list = res2.b.find_next("p").text.split('*')[1:]
-                    MTech_branches = [i.strip() for i in MTech_list if i.strip().endswith("[M.Tech]")]
-                    payslabs["MTech"].append(MTech_branches)
-                    # print("MTech : ",end='')
-                    # print(MTech_branches)
+                if res2.find('b') and res2.b.text == "M.Tech / M.S":                # short-circuiting used
+                    try :
+                        MTech_list = res2.b.find_next("p").text.split('*')[1:]
+                        MTech_branches = [i.strip() for i in MTech_list if i.strip().endswith("[M.Tech]")]
+                        payslabs["MTech"].append(MTech_branches)
+                        # print("MTech : ",end='')
+                        # print(MTech_branches)
+                    except :
+                        pass
 
     if "M.S" in payslabs:
         for res in soup.find_all("table",cellpadding="0",cellspacing="0",width="690"):
             for res2 in res.find_all("tr"):
                 if res2.find("p") and res2.p.text.strip().endswith("[M.S]"):        # short-circuiting used
-                    MS_list = res2.p.text.split("*")[1:]
-                    MS_branches = [i.strip() for i in MS_list if i.strip().endswith("[M.S]")]
-                    payslabs["M.S"].append(MS_branches)
-                    # print("MS : ",end='')
-                    # print(MS_branches)
+                    try :
+                        MS_list = res2.p.text.split("*")[1:]
+                        MS_branches = [i.strip() for i in MS_list if i.strip().endswith("[M.S]")]
+                        payslabs["M.S"].append(MS_branches)
+                        # print("MS : ",end='')
+                        # print(MS_branches)
+                    except :
+                        pass
 
     if "Ph.D." in payslabs:
         for res in soup.find_all("table",cellpadding="0",cellspacing="0",width="690"):
             if res.b.text == "Ph.D" :
-                PhD_list = res.find_next("td",valign="top").text.split('*')[1:]
-                PhD_branches = [i.strip() for i in PhD_list]
-                payslabs["Ph.D."].append(PhD_branches)
-                # print("PhD : ",end='')
-                # print(PhD_branches)
+                try :
+                    PhD_list = res.find_next("td",valign="top").text.split('*')[1:]
+                    PhD_branches = [i.strip() for i in PhD_list]
+                    payslabs["Ph.D."].append(PhD_branches)
+                    # print("PhD : ",end='')
+                    # print(PhD_branches)
+                except :
+                    pass
 
     if "M.Sc." in payslabs:
         for res in soup.find_all("table",cellpadding="0",cellspacing="0",width="690"):
             for res2 in res.find_all("tr"):
-                if res2.find("b") and res2.b.text.strip() == "M.Sc":
-                    MSc_list = res2.find_next_sibling().p.text.strip().split('*')[1:]
-                    MSc_branches = [i.strip() for i in MSc_list]
-                    payslabs["M.Sc."].append(MSc_branches)
-                    # print("MSc : ",end='')
-                    # print(MSc_branches)
+                if res2.find("b") and res2.b.text.strip() == "M.Sc":                   # short-circuiting used
+                    try :
+                        MSc_list = res2.find_next_sibling().p.text.strip().split('*')[1:]
+                        MSc_branches = [i.strip() for i in MSc_list]
+                        payslabs["M.Sc."].append(MSc_branches)
+                        # print("MSc : ",end='')
+                        # print(MSc_branches)
+                    except :
+                        pass
 
     if "M.B.A." in payslabs:
-        pass
-    
+        for res in soup.find_all("table",cellpadding="0",cellspacing="0",width="690"):
+            for res2 in res.find_all("tr"):
+                if res2.find("b") and res2.b.text.strip() == "M.B.A":                   # short-circuiting used
+                    # there is a rogue result which does not have a sibling. Don't use that.
+                    try:                                
+                        MBA_list = res2.find_next_sibling().p.text.strip().split('*')[1:]
+                        MBA_branches = [i.strip() for i in MBA_list]
+                        payslabs["M.B.A."].append(MBA_branches)
+                        # print("MBA : ",end='')
+                        # print(MBA_branches)
+                    except:
+                        pass
+                    
     if "M.A." in payslabs:
         pass
         # for res in soup.find_all("table",cellpadding="0",cellspacing="0",width="690"):
@@ -158,20 +186,20 @@ def main():
         source = session.get(url_all_companies).text        # return html of the URL
         soup = BeautifulSoup(source,'html.parser')                 # send to Beuatifulsoup to parse it
 
-        testing = False
+        testing_single = False
         
-        if testing :
+        if testing_single :
 
-            result = soup.find_all("a",onclick='OpenPopup(this.href); return false')[14]
+            result = soup.find_all("a",onclick='OpenPopup(this.href); return false')[108]
             title,designation,offer_nature,payslabs = extract_details(session,result)
-            print(f"{title}")
+            # print(f"{title}")
 
         
         else :
 
             for result in soup.find_all("a",onclick='OpenPopup(this.href); return false'):  # all profile links have this tag
                 title,designation,offer_nature,payslabs = extract_details(session,result)
-                print(f"{title}")
+                # print(f"{title}")
 
         
 if __name__ == "__main__" :
