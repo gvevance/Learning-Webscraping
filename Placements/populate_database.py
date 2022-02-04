@@ -71,12 +71,15 @@ def extract_details(session,result):
     # code to extract branches within each degree
     
     if "BTech" in payslabs:
-        btech_list= soup.find("table",cellpadding="0",cellspacing="0",width="690").p.text.split('*')[1:]
-        # the first table will be BTech if it is there (checked at if "BTech" in payslabs).
-        btech_branches = [i.strip() for i in btech_list]
-        payslabs["BTech"].append(btech_branches)
-        # print("BTech : ",end='')
-        # print(btech_branches)
+        try :
+            btech_list= soup.find("table",cellpadding="0",cellspacing="0",width="690").p.text.split('*')[1:]
+            # the first table will be BTech if it is there (checked at if "BTech" in payslabs).
+            btech_branches = [i.strip() for i in btech_list]
+            payslabs["BTech"].append(btech_branches)
+            # print("BTech : ",end='')
+            # print(btech_branches)
+        except :
+            pass
     
     if "Dual Degree" in payslabs:
         for res in soup.find_all("table",cellpadding="0",cellspacing="0",width="690"):
