@@ -12,11 +12,11 @@
 # Step 4 - Store it in a database or something similar (learn databases)
 
 # TODO : POPULATE A DATABASE (SQLITE)
-# TODO : EXTRACT ELIGIBILITY (BRANCHES OPEN TO)
 
-from re import T
+from locale import currency
 import requests
 from bs4 import BeautifulSoup
+import sqlite3
 
 login_page = 'https://placement.iitm.ac.in/students/login.php'
 picklefile = "profiles.pkl"
@@ -50,7 +50,7 @@ def extract_details(session,result):
     title = soup.find("td",width="80%").text.strip()
     designation = soup.find("td",width="377").text.strip()
     offer_nature = soup.find("td",valign="top",width="380").text.strip()
-    currency = soup.find("td",width="464",valign="top").text
+    currency = soup.find("td",width="464",valign="top").text.split("\n")[0]
 
     # Extracting CTC related information
     tempsoup = soup.body.find("table",border=1)
@@ -74,6 +74,7 @@ def extract_details(session,result):
     
     if "BTech" in payslabs:
         btech_list= soup.find("table",cellpadding="0",cellspacing="0",width="690").p.text.split('*')[1:]
+        # the first table will be BTech if it is there (checked at if "BTech" in payslabs).
         btech_branches = [i.strip() for i in btech_list]
         payslabs["BTech"].append(btech_branches)
         # print("BTech : ",end='')
@@ -172,6 +173,28 @@ def extract_details(session,result):
     return title,designation,offer_nature,payslabs
 
 
+def display(title,designation,offer_nature,payslabs):
+    print(f"Title - {title}")
+    print(f"Designation - {designation}")
+    print(f"Nature of offer - {offer_nature}")
+    
+    for key in payslabs:
+
+        currency,ctc,gross_taxable,fixed_basic_pay,others,branches = payslabs[key]
+        print(f"Degree : {key}")
+        print("Eligible for branches : ")
+        for branch in branches:
+            print(f"* {branch}")
+        print(f"\nCTC - {currency} {ctc} ")
+        print(f"Gross Taxable Income - {currency} {gross_taxable}")
+        print(f"Fixed basic pay - {currency} {fixed_basic_pay}")
+        print(f"Others - {others}")
+
+
+def update_database(title,designation,offer_nature,payslabs):
+    pass
+
+
 def main():
     
     # step 1
@@ -188,14 +211,20 @@ def main():
         
         session.post(login_page,data=payload).text      # login [look up Reference 3]
 
-        # get URLs of all profiles
+        # step 3 - get URLs of all profiles
         url_all_companies = 'https://placement.iitm.ac.in/students/comp_list_all.php'   # link to get to all companies
         source = session.get(url_all_companies).text        # return html of the URL
         soup = BeautifulSoup(source,'html.parser')                 # send to Beuatifulsoup to parse it
 
-        for result in soup.find_all("a",onclick='OpenPopup(this.href); return false'):  # all profile links have this tag
+        verbose = True
+        for result in soup.find_all("a",onclick='OpenPopup(this.href); return false')[-10:]:  # all profile links have this tag
             title,designation,offer_nature,payslabs = extract_details(session,result)
-            # print(f"{title}")
+            if verbose :
+                display(title,designation,offer_nature,payslabs)
+            update_database(title,designation,offer_nature,payslabs)
+
+            # testing
+            # print(payslabs)
 
         
 if __name__ == "__main__" :
