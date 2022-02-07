@@ -13,10 +13,8 @@
 
 # TODO : POPULATE A DATABASE (SQLITE)
 
-from locale import currency
 import requests
 from bs4 import BeautifulSoup
-import sqlite3
 
 from extract_details import extract_details
 from helper import getCredentials
@@ -24,7 +22,6 @@ from helper import display
 from database_ops import update_database
 
 login_page = 'https://placement.iitm.ac.in/students/login.php'
-picklefile = "profiles.pkl"
 credfile = "placements_ID.txt"
 database = "placements.db"
 
