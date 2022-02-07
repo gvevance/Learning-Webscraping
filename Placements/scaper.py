@@ -44,8 +44,8 @@ def main():
 
         # step 3 - get URLs of all profiles
         url_all_companies = 'https://placement.iitm.ac.in/students/comp_list_all.php'   # link to get to all companies
-        source = session.get(url_all_companies).text        # return html of the URL
-        soup = BeautifulSoup(source,'html.parser')                 # send to Beuatifulsoup to parse it
+        source = session.get(url_all_companies).text                # return html of the URL
+        soup = BeautifulSoup(source,'html.parser')                  # send to Beuatifulsoup to parse it
 
         bad_count = 0
         verbose = True

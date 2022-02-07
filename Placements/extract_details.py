@@ -53,7 +53,7 @@ def extract_details(session,result):
         if len(payslabs[key]) != 6 :
             bad_data_count += 1
 
-    if len[payslabs] == 0 :
+    if len(payslabs) == 0 :
         bad_data_count += 1
 
     return title,designation,offer_nature,payslabs,bad_data_count
