@@ -30,10 +30,13 @@ def extract_details(session,result):
         degree = item.find("td",width="20%").text.strip()
         ctc = item.find("td",width="14%").text
         gross_taxable = item.find("td",width="13%").text
+ 
         fixed_basic_pay = item.find("td",width="16%").text
         others = item.find("td",width="16%").find_next_sibling().text
+
         # "fixed pay" and "others" have the same tags so used find_next_sibling() on the first occurrence ...
         # (fixed pay column) to get the second one (others column)
+ 
         if int(ctc) != 0 or int(gross_taxable) != 0 or int(fixed_basic_pay) != 0 :
             payslabs[degree]=[currency,ctc,gross_taxable,fixed_basic_pay,others]
 

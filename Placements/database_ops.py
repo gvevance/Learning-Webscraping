@@ -16,6 +16,13 @@ credfile = "placements_ID.txt"
 database = "placements.db"
 
 
+def db_init(database):
+    
+    conn = sqlite3.connect(database)
+    c = conn.cursor()
+    return conn,c
+
+
 def repopulate_db(exists):
 
     if exists :
@@ -30,6 +37,8 @@ def repopulate_db(exists):
         'pass'   : password ,
         'submit' : 'Login'
     }
+
+    conn,c = db_init(database)
 
     # step 2 - open session
     with requests.Session() as session :
@@ -48,14 +57,33 @@ def repopulate_db(exists):
             bad_count += bad_data_count
             if verbose :
                 display(title,designation,offer_nature,payslabs)
-            update_database(title,designation,offer_nature,payslabs)
+            update_database(title,designation,offer_nature,payslabs,conn,c)
         
         print(f"Bad data count = {bad_count}")
 
 
-def update_database(title,designation,offer_nature,payslabs):
+def update_database(title,designation,offer_nature,payslabs,conn,c):
+    
     print(title,designation,offer_nature)
     for key in payslabs :
-        print(key,payslabs[key])
+        try :
+            for branch in payslabs[key][5]:
+                text = f""" CREATE TABLE "{key} {branch}"(
+                        Title text ,
+                        Designation text ,
+                        "Nature of Offer" text ,
+                        CTC integer ,
+                        "Gross Taxable Income" integer ,
+                        "Fixed Basic Pay" integer ,
+                        Others text
+                        )"""
+                
+            c.execute(text)
+        except IndexError :
+            print("Bad data. Check it out.")
+        except sqlite3.OperationalError:
+            print(f"Table already exists error.")
+        except :
+            input("New error type found.")
 
-
+        
