@@ -1,24 +1,15 @@
 # database operations
 
-
-import pickle
 import sqlite3
-import requests
-from bs4 import BeautifulSoup
-from os.path import exists
 
-from helper import getCredentials
-from extract_details import extract_details
-from helper import getCredentials
-from helper import display
-from pickle_ops import store_in_pickle
-from pickle_ops import pickle_print_all
+from pickle_ops import pickle_file_creation
 
 
 login_page = 'https://placement.iitm.ac.in/students/login.php'
 credfile = "placements_ID.txt"
 database = "placements.db"
 picklefile = "placements.pkl"
+
 
 def db_init(database):
     
@@ -123,94 +114,11 @@ def populate_db(file_exists):
             pass
 
     # step 1
-    username,password = getCredentials(credfile)
-    
-    payload = {
-        'rollno' : username ,
-        'pass'   : password ,
-        'submit' : 'Login'
-    }
+    pickle_file_creation()
 
     conn,c = db_init(database)
 
-    if exists(picklefile):
-        
-        rewrite_pkl = input("Pickle file exists. Do you want to rewrite it ? (yes/no) ")
-
-        if rewrite_pkl == "yes" :
-
-            # clear file            
-            with open(picklefile,"w"):
-                pass
-
-            # step 2 - open session
-            with requests.Session() as session :
-                
-                session.post(login_page,data=payload).text      # login [look up Reference 3]
-
-                # step 3 - get URLs of all profiles
-                url_all_companies = 'https://placement.iitm.ac.in/students/comp_list_all.php'   # link to get to all companies
-                source = session.get(url_all_companies).text                # return html of the URL
-                soup = BeautifulSoup(source,'html.parser')                  # send to Beuatifulsoup to parse it
-
-                # opening pickle file
-                
-                pfile = open(picklefile,'ab+')
-
-                bad_count = 0
-                verbose = False
-                for result in soup.find_all("a",onclick='OpenPopup(this.href); return false'):  # all profile links have this tag
-                    profile,bad_data_count = extract_details(session,result)
-                    bad_count += bad_data_count
-                    
-                    if verbose :
-                        display(profile)
-                    
-                    store_in_pickle(profile,pfile)
-
-                pfile.close()                
-                print(f"Bad data count = {bad_count}")
-
-        else :      # pickle file exisits but don't rewrite it
-
-            pfile = open(picklefile,'rb')
-            
-            # print all objects
-            printall = input("Do you want to print all objects ? (yes/no) ")
-            if printall == "yes" :
-                pickle_print_all(pfile)
-            
-
-
-
-    else : 
-             # pickle file does not exist
-        with requests.Session() as session :
-                
-            session.post(login_page,data=payload).text      # login [look up Reference 3]
-
-            # step 3 - get URLs of all profiles
-            url_all_companies = 'https://placement.iitm.ac.in/students/comp_list_all.php'   # link to get to all companies
-            source = session.get(url_all_companies).text                # return html of the URL
-            soup = BeautifulSoup(source,'html.parser')                  # send to Beuatifulsoup to parse it
-
-            # opening pickle file
-            
-            pfile = open(picklefile,'ab+')
-
-            bad_count = 0
-            verbose = False
-            for result in soup.find_all("a",onclick='OpenPopup(this.href); return false'):  # all profile links have this tag
-                profile,bad_data_count = extract_details(session,result)
-                bad_count += bad_data_count
-                
-                if verbose :
-                    display(profile)
-                
-                store_in_pickle(profile,pfile)
-
-            pfile.close()            
-            print(f"Bad data count = {bad_count}")
+    # Add code for database populating here
 
     conn.commit()
     conn.close()

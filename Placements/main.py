@@ -11,7 +11,6 @@
 # Step 3 - Loop through relevant job profiles. Click on each profile and retrieve details (simulate it).
 # Step 4 - Store it in a database or something similar (learn databases)
 
-# TODO : POPULATE A DATABASE (SQLITE)
 
 from os.path import exists
 
@@ -19,6 +18,7 @@ from database_ops import populate_db
 
 
 database = "placements.db"
+picklefile = "placements.pkl"
 
 
 def main():
@@ -31,9 +31,10 @@ def main():
             populate_db(file_exists=True)
     
     else :
-        print("Populating database.")
-        populate_db(file_exists=False)
-    
+        populate = input("Database not not exist. Do you want to populate it ? (yes/no) ")
+        if populate == "yes" or populate == "YES" :
+            populate_db(file_exists=False)
+
 
 if __name__ == "__main__" :
     main()
