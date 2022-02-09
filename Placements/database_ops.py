@@ -39,9 +39,18 @@ def insert_data_db(profile,table_set,c):
             for branch in profile.get_branch_list(key):
 
                 if branch == "All" :
-                    pass
-                    # for i in get_relevant_branches(key,table_set) :
-                    #     pass
+                    
+                    for branch_2 in get_relevant_branches(key,table_set) :
+
+                        text = f'''INSERT INTO "{branch_2}" VALUES (?,?,?,?,?,?,?,?)''' 
+                        info_tuple_ = (title,designation,offer_nature,currency,ctc,gross_taxable,fixed_pay,others)
+                        
+                        try :
+                            c.execute(text,info_tuple_)
+
+                        except Exception as e:
+                            print(e)
+                            input()    
 
                 else :
 

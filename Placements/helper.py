@@ -44,4 +44,6 @@ def display(profile):
 
 
 def get_relevant_branches(key,table_set):
-    pass
+    
+    relevant_branches = [branch for branch in table_set if branch.startswith(key)]
+    return relevant_branches
