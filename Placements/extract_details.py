@@ -1,6 +1,8 @@
 # extract details from the given link
 
 from bs4 import BeautifulSoup
+
+from profile import profile
 from get_branches import get_btech_branches
 from get_branches import get_dual_branches
 from get_branches import get_mtech_branches
@@ -59,4 +61,6 @@ def extract_details(session,result):
     if len(payslabs) == 0 :
         bad_data_count += 1
 
-    return title,designation,offer_nature,payslabs,bad_data_count
+    temp = profile(title,designation,offer_nature,payslabs)
+    
+    return temp,bad_data_count

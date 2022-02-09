@@ -15,7 +15,7 @@
 
 from os.path import exists
 
-from database_ops import repopulate_db
+from database_ops import populate_db
 
 
 database = "placements.db"
@@ -23,18 +23,16 @@ database = "placements.db"
 
 def main():
     
-    # Menu
-
     print("\nPlacements project - \n")
 
     if exists(database):
-        repopulate = input("Database exists. Do you want to repopulate it ? (yes/no) ")
-        if repopulate == "yes" or repopulate == "YES" :
-            repopulate_db(exists=True)
+        populate = input("Database exists. Do you want to repopulate it ? (yes/no) ")
+        if populate == "yes" or populate == "YES" :
+            populate_db(exists=True)
     
     else :
         print("Populating database.")
-        repopulate_db(exists=False)
+        populate_db(exists=False)
     
 
 if __name__ == "__main__" :

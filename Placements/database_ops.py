@@ -1,6 +1,7 @@
 # database operations
 
 
+import pickle
 import sqlite3
 import requests
 from bs4 import BeautifulSoup
@@ -23,7 +24,7 @@ def db_init(database):
     return conn,c
 
 
-def insert_data(table_name,title,designation,offer_nature,pay_details,conn,c):
+def insert_data(table_name,title,designation,offer_nature,pay_details,c):
     
     currency = pay_details[0]
     ctc = int(pay_details[1])
@@ -31,64 +32,88 @@ def insert_data(table_name,title,designation,offer_nature,pay_details,conn,c):
     fixed_basic_pay = int(pay_details[3])
     others = pay_details[4]
 
-    text = f'''INSERT INTO {table_name} VALUES (?,?,?,?,?,?,?,?)'''
-    # dict = {"Title"                 : title ,
-    #         "Designation"           : designation ,
-    #         "Nature"                : offer_nature ,
-    #         "Currency"              : currency ,
-    #         "CTC"                   : ctc ,
-    #         "Gross"                 : gross_taxable ,
-    #         "Fixed"                 : fixed_basic_pay ,
-    #         "Others"                : others }
-    
+    text = f'''INSERT INTO "{table_name}" VALUES (?,?,?,?,?,?,?,?)''' 
     tuple_ = (title,designation,offer_nature,currency,ctc,gross_taxable,fixed_basic_pay,others)
 
     try :
         c.execute(text,tuple_)
+        # print(f"Entry added to {table_name}")
     except Exception as e :
         print("New error type found 3.")
         print(e)
         input()
 
-        
-def update_database(title,designation,offer_nature,payslabs,conn,c):
-    
-    print(title,designation,offer_nature)
-    for key in payslabs :
-        try :
-            for branch in payslabs[key][5]:
-                text = f""" CREATE TABLE "{key} {branch}"(
-                        Title text ,
-                        Designation text ,
-                        "Nature of Offer" text ,
-                        Currency text ,
-                        CTC integer ,
-                        "Gross Taxable Income" integer ,
-                        "Fixed Basic Pay" integer ,
-                        Others text
-                        )"""
-                try :
-                    c.execute(text)
-                
-                except sqlite3.OperationalError :
-                    print(f"Table already exists error.")
-                
-                except Exception as e :
-                    print("New error type found 1")
-                    print(e)
-                    input()
 
-                table_name = f'''"{key} {branch}"'''
-                insert_data(table_name,title,designation,offer_nature,payslabs[key],conn,c)
+def create_tables(profile,c):
+    
+    for key in profile.get_payslabs_keys() :
+        
+        try :
+                
+            for branch in profile.get_branches(key) :
+                
+                if branch != "All" :
+
+                    table_name = f"{key} {branch}"
+                    text = f''' CREATE TABLE "{table_name}"(
+                                Title text ,
+                                Designation text ,
+                                "Nature of Offer" text ,
+                                Currency text ,
+                                CTC integer ,
+                                "Gross Taxable Income" integer ,
+                                "Fixed Basic Pay" integer ,
+                                Others text
+                                )'''
+
+                    c.execute(text)
+
+                    print(f"Table created - {table_name}.")
+        
+        except sqlite3.OperationalError :
+            # table exixts
+            # print("Table exists")
+            pass
 
         except IndexError :
-            print("Bad data. Check it out.")
+            # bad data
+            # print("Bad data")
+            pass
+
         except Exception as e:
-            print("New error type found 2")
+            
+            print("Error found at table creation except clause.")
             print(e)
             input()
 
-def repopulate_db(exists):
+
+def update_database(title,designation,offer_nature,payslabs,c):
+    
+    for key in payslabs :
+        
+        try :
+            
+            for branch in payslabs[key][5] :
+                
+                if branch == "All" :
+                    # get all tables which start with key and insert to each one
+                    pass
+
+                else :
+                    table_name = f"{key} {branch}"
+                    insert_data(table_name,title,designation,offer_nature,payslabs[key],c)
+
+        except IndexError :
+            # print("Bad data. Check it out.")
+            print("Bad data")
+
+        except Exception as e:
+            print("Error found at table update except clause.")
+            print(e)
+            input()
+
+
+def populate_db(exists):
 
     if exists :
         with open(database,'w') :       # clear file     
@@ -118,11 +143,25 @@ def repopulate_db(exists):
         bad_count = 0
         verbose = False
         for result in soup.find_all("a",onclick='OpenPopup(this.href); return false'):  # all profile links have this tag
-            title,designation,offer_nature,payslabs,bad_data_count = extract_details(session,result)
+            profile,bad_data_count = extract_details(session,result)
             bad_count += bad_data_count
+            
             if verbose :
-                display(title,designation,offer_nature,payslabs)
-            update_database(title,designation,offer_nature,payslabs,conn,c)
+                display(profile)
+            
+            store_in_pickle(profile)
+
+            # create_tables(profile,c)
+
+        # input("Tables created. Press a key to continue.")
+        
+        # for result in soup.find_all("a",onclick='OpenPopup(this.href); return false'):  # all profile links have this tag
+        #     title,designation,offer_nature,payslabs,bad_data_count = extract_details(session,result)
+        #     bad_count += bad_data_count
+        #     if verbose :
+        #         display(title,designation,offer_nature,payslabs)
+        #     update_database(title,designation,offer_nature,payslabs,c)
+
         
         print(f"Bad data count = {bad_count}")
         conn.commit()
