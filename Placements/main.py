@@ -27,7 +27,7 @@ def main():
 
     if exists(database):
         populate = input("Database exists. Do you want to repopulate it ? (yes/no) ")
-        if populate == "yes" or populate == "YES" :
+        if populate == "yes" :
             populate_db(file_exists=True)
     
     else :

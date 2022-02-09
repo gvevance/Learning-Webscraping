@@ -1,6 +1,7 @@
 # database operations
 
 import sqlite3
+import pickle
 
 from pickle_ops import pickle_file_creation
 
@@ -38,47 +39,59 @@ def insert_data(table_name,title,designation,offer_nature,pay_details,c):
         input()
 
 
-def create_tables(profile,c):
+def create_table_in_db(table_name,c) :
     
-    for key in profile.get_payslabs_keys() :
-        
+    try :
+        text = f''' CREATE TABLE "{table_name}"(
+                    Title text ,
+                    Designation text ,
+                    "Nature of Offer" text ,
+                    Currency text ,
+                    CTC integer ,
+                    "Gross Taxable Income" integer ,
+                    "Fixed Basic Pay" integer ,
+                    Others text
+                    )'''
+        c.execute(text)
+
+    except sqlite3.OperationalError :
+        pass
+     
+    except Exception as e :
+        print(e)
+        input()
+
+
+def create_tables(pfile,c):
+    
+    table_set = set()
+
+    while True :
+    
         try :
-                
-            for branch in profile.get_branches(key) :
-                
-                if branch != "All" :
-
-                    table_name = f"{key} {branch}"
-                    text = f''' CREATE TABLE "{table_name}"(
-                                Title text ,
-                                Designation text ,
-                                "Nature of Offer" text ,
-                                Currency text ,
-                                CTC integer ,
-                                "Gross Taxable Income" integer ,
-                                "Fixed Basic Pay" integer ,
-                                Others text
-                                )'''
-
-                    c.execute(text)
-
-                    print(f"Table created - {table_name}.")
-        
-        except sqlite3.OperationalError :
-            # table exixts
-            # print("Table exists")
-            pass
-
-        except IndexError :
-            # bad data
-            # print("Bad data")
-            pass
-
-        except Exception as e:
             
-            print("Error found at table creation except clause.")
-            print(e)
-            input()
+            profile = pickle.load(pfile)
+            if profile.check_health() == "OK" :
+                
+                for key in profile.get_payslabs_keys():
+                    
+                    if profile.check_payslabs_health(key) == "OK" :
+
+                        for branch in  profile.get_branch_list(key) :
+                            
+                            if branch != "All" :
+
+                                table_name = f"{key} {branch}"
+                                create_table_in_db(table_name,c)
+                                table_set.add(table_name)
+            
+            else :
+                print(profile.check_health())
+
+        except EOFError:
+            break
+
+    return table_set
 
 
 def update_database(title,designation,offer_nature,payslabs,c):
@@ -109,18 +122,29 @@ def update_database(title,designation,offer_nature,payslabs,c):
 
 def populate_db(file_exists):
 
+    # step 1
+    pfile = pickle_file_creation()
+
     if file_exists :
         with open(database,'w') :       # clear file     
             pass
-
-    # step 1
-    pickle_file_creation()
 
     conn,c = db_init(database)
 
     # Add code for database populating here
 
+    # 1. loop through and create tables - this is to be done first because I have to resolve "All" cases
+    # 2. loop through again to add data to relevant tables
+    # 3. close pfile
+
+    tables = create_tables(pfile,c)
+
+    print_tables = input("Tables created. Do you want to print them ? (yes/no) ")
+    if print_tables == "yes" :
+        for t in sorted(list(tables)) :
+            print(t)
+
     conn.commit()
     conn.close()
-
+    pfile.close()
 

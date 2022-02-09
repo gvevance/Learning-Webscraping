@@ -15,7 +15,7 @@ class profile :
         if len(self.payslabs) == 0 :
             return "Paylslabs empty."
         else :
-            return "All good."
+            return "OK"
 
 
     def get_all(self):
@@ -23,7 +23,7 @@ class profile :
 
 
     def get_payslabs_keys(self):
-        return [i for i in self.payslabs]
+        return [key for key in self.payslabs]
 
 
     def check_payslabs_health(self,key):
@@ -35,7 +35,7 @@ class profile :
             return "Branch list is empty"
 
         else :
-            return "All good."
+            return "OK"
 
 
     def get_currency(self,key):

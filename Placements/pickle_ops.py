@@ -81,7 +81,7 @@ def pickle_file_creation():
                 print(f"Bad data count = {bad_count}")
 
             
-    else : 
+    else :      # if pickle file does not exist, create it without asking for user-input
         
         username,password = getCredentials(credfile)
         
@@ -91,7 +91,6 @@ def pickle_file_creation():
             'submit' : 'Login'
         }
 
-        # pickle file does not exist
         with requests.Session() as session :
                 
             session.post(login_page,data=payload).text      # login [look up Reference 3]
@@ -119,9 +118,15 @@ def pickle_file_creation():
             pfile.close()            
             print(f"Bad data count = {bad_count}")
 
-    pfile = open(picklefile,'rb')
     
     # print all objects
     printall = input("Do you want to print all objects ? (yes/no) ")
     if printall == "yes" :
-        pickle_print_all(pfile)
+        pfile = open(picklefile,'rb')       # create "file" object
+        pickle_print_all(pfile)             # send it to read and print all
+        pfile.close()                       # close the file
+
+    # create an file object again
+    pfile = open(picklefile,'rb')
+
+    return pfile
