@@ -57,6 +57,7 @@ def extract_details(session,result):
     for key in payslabs:
         if len(payslabs[key]) != 6 :
             bad_data_count += 1
+            payslabs[key].append([])     # if paylabs was not appended, append an empty list.
 
     if len(payslabs) == 0 :
         bad_data_count += 1

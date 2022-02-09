@@ -32,7 +32,7 @@ def pickle_print_all(picklefile_obj):
             break
 
 
-def pickle_file_creation():
+def pickle_file_populate():
 
     if exists(picklefile):
         
@@ -126,7 +126,4 @@ def pickle_file_creation():
         pickle_print_all(pfile)             # send it to read and print all
         pfile.close()                       # close the file
 
-    # create an file object again
-    pfile = open(picklefile,'rb')
 
-    return pfile

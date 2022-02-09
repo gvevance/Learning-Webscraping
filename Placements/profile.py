@@ -13,7 +13,7 @@ class profile :
         # payslabs is empty, (add more as they are discovered)
         
         if len(self.payslabs) == 0 :
-            return "Paylslabs empty."
+            return f"Payslabs empty in profile - {self.title}"
         else :
             return "OK"
 

@@ -3,7 +3,8 @@
 import sqlite3
 import pickle
 
-from pickle_ops import pickle_file_creation
+from pickle_ops import pickle_file_populate
+from helper import get_relevant_branches
 
 
 login_page = 'https://placement.iitm.ac.in/students/login.php'
@@ -19,24 +20,52 @@ def db_init(database):
     return conn,c
 
 
-def insert_data(table_name,title,designation,offer_nature,pay_details,c):
+def insert_data_db(profile,table_set,c):
     
-    currency = pay_details[0]
-    ctc = int(pay_details[1])
-    gross_taxable = int(pay_details[2])
-    fixed_basic_pay = int(pay_details[3])
-    others = pay_details[4]
+    title = profile.title
+    designation = profile.designation
+    offer_nature = profile.offer_nature
+    
+    for key in profile.get_payslabs_keys():
 
-    text = f'''INSERT INTO "{table_name}" VALUES (?,?,?,?,?,?,?,?)''' 
-    tuple_ = (title,designation,offer_nature,currency,ctc,gross_taxable,fixed_basic_pay,others)
+        currency = profile.get_currency(key)
+        ctc = profile.get_ctc(key)
+        gross_taxable = profile.get_gross(key)
+        fixed_pay = profile.get_fixed_pay(key)
+        others = profile.get_others(key)
 
-    try :
-        c.execute(text,tuple_)
-        # print(f"Entry added to {table_name}")
-    except Exception as e :
-        print("New error type found 3.")
-        print(e)
-        input()
+        for branch in profile.get_branch_list(key):
+
+            if branch == "All" :
+                pass
+                # for i in get_relevant_branches(key,table_set) :
+                #     pass
+
+            else :
+
+                table_name = f"{key} {branch}"
+                text = f'''INSERT INTO "{table_name}" VALUES (?,?,?,?,?,?,?,?)''' 
+                info_tuple_ = (title,designation,offer_nature,currency,ctc,gross_taxable,fixed_pay,others)
+                
+                try :
+                    c.execute(text,info_tuple_)
+
+                except Exception as e:
+                    print(e)
+                    input()
+
+
+
+    # text = f'''INSERT INTO "{table_name}" VALUES (?,?,?,?,?,?,?,?)''' 
+    # tuple_ = (title,designation,offer_nature,currency,ctc,gross_taxable,fixed_basic_pay,others)
+
+    # try :
+    #     c.execute(text,tuple_)
+    #     # print(f"Entry added to {table_name}")
+    # except Exception as e :
+    #     print("New error type found 3.")
+    #     print(e)
+    #     input()
 
 
 def create_table_in_db(table_name,c) :
@@ -62,8 +91,10 @@ def create_table_in_db(table_name,c) :
         input()
 
 
-def create_tables(pfile,c):
+def create_tables(c):
     
+    pfile = open(picklefile,'rb')
+
     table_set = set()
 
     while True :
@@ -90,40 +121,65 @@ def create_tables(pfile,c):
 
         except EOFError:
             break
+    
+    pfile.close()
 
     return table_set
 
 
-def update_database(title,designation,offer_nature,payslabs,c):
+def update_database(table_set,c):
     
-    for key in payslabs :
-        
+    pfile = open(picklefile,'rb')
+
+    while True :
+    
         try :
             
-            for branch in payslabs[key][5] :
+            profile = pickle.load(pfile)
+            if profile.check_health() == "OK" :
                 
-                if branch == "All" :
-                    # get all tables which start with key and insert to each one
-                    pass
+                for key in profile.get_payslabs_keys():
+                    
+                    if profile.check_payslabs_health(key) == "OK" :
 
-                else :
-                    table_name = f"{key} {branch}"
-                    insert_data(table_name,title,designation,offer_nature,payslabs[key],c)
+                        insert_data_db(profile,table_set,c)            
+            else :
+                print(profile.check_health())
 
-        except IndexError :
-            # print("Bad data. Check it out.")
-            print("Bad data")
+        except EOFError:
+            break
+    
+    pfile.close()
 
-        except Exception as e:
-            print("Error found at table update except clause.")
-            print(e)
-            input()
+    
+    # for key in payslabs :
+        
+    #     try :
+            
+    #         for branch in payslabs[key][5] :
+                
+    #             if branch == "All" :
+    #                 # get all tables which start with key and insert to each one
+    #                 pass
+
+    #             else :
+    #                 table_name = f"{key} {branch}"
+    #                 insert_data(table_name,title,designation,offer_nature,payslabs[key],c)
+
+    #     except IndexError :
+    #         # print("Bad data. Check it out.")
+    #         print("Bad data")
+
+    #     except Exception as e:
+    #         print("Error found at table update except clause.")
+    #         print(e)
+    #         input()
 
 
 def populate_db(file_exists):
 
     # step 1
-    pfile = pickle_file_creation()
+    pickle_file_populate()
 
     if file_exists :
         with open(database,'w') :       # clear file     
@@ -133,18 +189,15 @@ def populate_db(file_exists):
 
     # Add code for database populating here
 
-    # 1. loop through and create tables - this is to be done first because I have to resolve "All" cases
-    # 2. loop through again to add data to relevant tables
-    # 3. close pfile
-
-    tables = create_tables(pfile,c)
+    tables = create_tables(c)
 
     print_tables = input("Tables created. Do you want to print them ? (yes/no) ")
     if print_tables == "yes" :
         for t in sorted(list(tables)) :
             print(t)
 
+    update_database(tables,c)
+
     conn.commit()
     conn.close()
-    pfile.close()
 

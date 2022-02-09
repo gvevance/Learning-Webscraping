@@ -41,3 +41,7 @@ def display(profile):
             print("Bad data.")
     
     print("\n")
+
+
+def get_relevant_branches(key,table_set):
+    pass
