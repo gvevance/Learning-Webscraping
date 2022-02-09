@@ -28,11 +28,11 @@ def main():
     if exists(database):
         populate = input("Database exists. Do you want to repopulate it ? (yes/no) ")
         if populate == "yes" or populate == "YES" :
-            populate_db(exists=True)
+            populate_db(file_exists=True)
     
     else :
         print("Populating database.")
-        populate_db(exists=False)
+        populate_db(file_exists=False)
     
 
 if __name__ == "__main__" :

@@ -10,19 +10,25 @@ def getCredentials(credfile):
     return username , password
 
 
-def display(title,designation,offer_nature,payslabs):
+def display(profile):
     
-    print(f"Title - {title}")
-    print(f"Designation - {designation}")
-    print(f"Nature of offer - {offer_nature}")
+    print(f"Title - {profile.title}")
+    print(f"Designation - {profile.designation}")
+    print(f"Nature of offer - {profile.offer_nature}")
     
-    for key in payslabs:
+    for key in profile.get_payslabs_keys():
 
         print(f"\nDegree : {key}")
         print("Eligible for branches : ")
         
         try :
-            currency,ctc,gross_taxable,fixed_basic_pay,others,branches = payslabs[key]
+            currency = profile.get_currency(key)
+            ctc = profile.get_ctc(key)
+            gross_taxable = profile.get_gross(key)
+            fixed_basic_pay = profile.get_fixed_pay(key)
+            others = profile.get_others(key)
+            branches = profile.get_branch_list(key)
+
             for branch in branches:
                 print(f"* {branch}")
             print(f"\nCTC - {currency} {ctc} ")

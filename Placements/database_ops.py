@@ -5,17 +5,20 @@ import pickle
 import sqlite3
 import requests
 from bs4 import BeautifulSoup
+from os.path import exists
 
 from helper import getCredentials
 from extract_details import extract_details
 from helper import getCredentials
 from helper import display
+from pickle_ops import store_in_pickle
+from pickle_ops import pickle_print_all
 
 
 login_page = 'https://placement.iitm.ac.in/students/login.php'
 credfile = "placements_ID.txt"
 database = "placements.db"
-
+picklefile = "placements.pkl"
 
 def db_init(database):
     
@@ -113,9 +116,9 @@ def update_database(title,designation,offer_nature,payslabs,c):
             input()
 
 
-def populate_db(exists):
+def populate_db(file_exists):
 
-    if exists :
+    if file_exists :
         with open(database,'w') :       # clear file     
             pass
 
@@ -130,41 +133,86 @@ def populate_db(exists):
 
     conn,c = db_init(database)
 
-    # step 2 - open session
-    with requests.Session() as session :
+    if exists(picklefile):
         
-        session.post(login_page,data=payload).text      # login [look up Reference 3]
+        rewrite_pkl = input("Pickle file exists. Do you want to rewrite it ? (yes/no) ")
 
-        # step 3 - get URLs of all profiles
-        url_all_companies = 'https://placement.iitm.ac.in/students/comp_list_all.php'   # link to get to all companies
-        source = session.get(url_all_companies).text                # return html of the URL
-        soup = BeautifulSoup(source,'html.parser')                  # send to Beuatifulsoup to parse it
+        if rewrite_pkl == "yes" :
 
-        bad_count = 0
-        verbose = False
-        for result in soup.find_all("a",onclick='OpenPopup(this.href); return false'):  # all profile links have this tag
-            profile,bad_data_count = extract_details(session,result)
-            bad_count += bad_data_count
+            # clear file            
+            with open(picklefile,"w"):
+                pass
+
+            # step 2 - open session
+            with requests.Session() as session :
+                
+                session.post(login_page,data=payload).text      # login [look up Reference 3]
+
+                # step 3 - get URLs of all profiles
+                url_all_companies = 'https://placement.iitm.ac.in/students/comp_list_all.php'   # link to get to all companies
+                source = session.get(url_all_companies).text                # return html of the URL
+                soup = BeautifulSoup(source,'html.parser')                  # send to Beuatifulsoup to parse it
+
+                # opening pickle file
+                
+                pfile = open(picklefile,'ab+')
+
+                bad_count = 0
+                verbose = False
+                for result in soup.find_all("a",onclick='OpenPopup(this.href); return false'):  # all profile links have this tag
+                    profile,bad_data_count = extract_details(session,result)
+                    bad_count += bad_data_count
+                    
+                    if verbose :
+                        display(profile)
+                    
+                    store_in_pickle(profile,pfile)
+
+                pfile.close()                
+                print(f"Bad data count = {bad_count}")
+
+        else :      # pickle file exisits but don't rewrite it
+
+            pfile = open(picklefile,'rb')
             
-            if verbose :
-                display(profile)
+            # print all objects
+            printall = input("Do you want to print all objects ? (yes/no) ")
+            if printall == "yes" :
+                pickle_print_all(pfile)
             
-            store_in_pickle(profile)
 
-            # create_tables(profile,c)
 
-        # input("Tables created. Press a key to continue.")
-        
-        # for result in soup.find_all("a",onclick='OpenPopup(this.href); return false'):  # all profile links have this tag
-        #     title,designation,offer_nature,payslabs,bad_data_count = extract_details(session,result)
-        #     bad_count += bad_data_count
-        #     if verbose :
-        #         display(title,designation,offer_nature,payslabs)
-        #     update_database(title,designation,offer_nature,payslabs,c)
 
-        
-        print(f"Bad data count = {bad_count}")
-        conn.commit()
-        conn.close()
+    else : 
+             # pickle file does not exist
+        with requests.Session() as session :
+                
+            session.post(login_page,data=payload).text      # login [look up Reference 3]
+
+            # step 3 - get URLs of all profiles
+            url_all_companies = 'https://placement.iitm.ac.in/students/comp_list_all.php'   # link to get to all companies
+            source = session.get(url_all_companies).text                # return html of the URL
+            soup = BeautifulSoup(source,'html.parser')                  # send to Beuatifulsoup to parse it
+
+            # opening pickle file
+            
+            pfile = open(picklefile,'ab+')
+
+            bad_count = 0
+            verbose = False
+            for result in soup.find_all("a",onclick='OpenPopup(this.href); return false'):  # all profile links have this tag
+                profile,bad_data_count = extract_details(session,result)
+                bad_count += bad_data_count
+                
+                if verbose :
+                    display(profile)
+                
+                store_in_pickle(profile,pfile)
+
+            pfile.close()            
+            print(f"Bad data count = {bad_count}")
+
+    conn.commit()
+    conn.close()
 
 

@@ -18,6 +18,10 @@ class profile :
             return "All good."
 
 
+    def get_all(self):
+        return self.title,self.designation,self.offer_nature,self.payslabs
+
+
     def get_payslabs_keys(self):
         return [i for i in self.payslabs]
 
@@ -32,6 +36,11 @@ class profile :
 
         else :
             return "All good."
+
+
+    def get_currency(self,key):
+        ''' call after checking health of this class object '''
+        return self.payslabs[key][0]
 
 
     def get_ctc(self,key):
