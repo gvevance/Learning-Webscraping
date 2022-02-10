@@ -1,5 +1,6 @@
 # helper functions
 
+credfile = "placements_ID.txt"
 
 def getCredentials(credfile):
 
