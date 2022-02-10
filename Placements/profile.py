@@ -29,7 +29,7 @@ class profile :
     def check_payslabs_health(self,key):
         
         if len(self.payslabs[key]) != 6 :
-            return "No branch list not found."
+            return "No branch list found."
     
         elif self.payslabs[key][5] == [] :
             return "Branch list is empty"
