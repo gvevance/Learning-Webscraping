@@ -2,6 +2,8 @@
 
 from bs4 import BeautifulSoup
 
+from classes import *
+
 def getCredentials(credfile):
 
     with open(credfile) as cfile :
@@ -10,7 +12,11 @@ def getCredentials(credfile):
 
     return username , password
 
+
 def login_amazon(session,email,password) :
+    ''' login into Amazon. No return object.
+        session is an HTML session.
+        email and password are the corresponding strings of email/phone number and password.'''
 
     main_url = "https://www.amazon.in/ap/signin"
 
@@ -32,20 +38,23 @@ def login_amazon(session,email,password) :
     }
 
     # login into account
-    res = session.post(main_url,data=payload,cookies=cookies).text
-    soup = BeautifulSoup(res,'lxml')
+    session.post(main_url,data=payload,cookies=cookies)    # not storing return value
 
-    return soup
 
 def get_search_results(session,query) :
     ''' This function returns results of a search query as a list of soup results. 
         session is an HTML session.
         query is the text to search for. '''
-        
+
     search_url = f"https://www.amazon.in/s?k={query}&i=aps&ref=nb_sb_ss_ts-doa-p_2_2&crid=OYVDLPMKGY95&sprefix=Ki,aps,28"
 
     res = session.get(search_url,allow_redirects=True).text
     soup = BeautifulSoup(res,'lxml')
-    results = soup.find_all("span",class_ = "a-size-medium a-color-base a-text-normal")
+    results = soup.find_all("a",class_="a-link-normal s-underline-text s-underline-link-text s-link-style a-text-normal")
+    links = [result['href'] for result in results]
 
-    return results
+    obj_list = []
+    for link in links :
+        obj_list.append(search_result(link))
+
+    return obj_list

@@ -12,12 +12,16 @@ email,password = getCredentials(credfile)
 
 with requests.Session() as session :
 
-    soup = login_amazon(session,email,password)
+    # login into amazon. session object is sent as a reference so no need of return object
+    login_amazon(session,email,password)
 
     # searching
-    query = input("Enter search query : ")    
-    results = get_search_results(session,query)
+    query = input("Enter search query : ")   
+    result_obj_list = get_search_results(session,query)
 
-    for result in results :
-        if all([i.lower() in result.text.lower() for i in query.split()]) :
-            print(result.text)
+    for i in result_obj_list :
+        soup = i.get_soup(session)
+        title = i.extract_title(soup)
+        rating = i.extract_rating(soup)
+        print(title)
+        print(rating)
