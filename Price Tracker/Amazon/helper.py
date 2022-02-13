@@ -1,8 +1,12 @@
 # helper functions
 
-from bs4 import BeautifulSoup
+import requests
 
 from classes import *
+from search import search_menu
+from product_details import product_details_menu
+from price_trend import price_trend_menu
+
 
 def getCredentials(credfile):
 
@@ -41,20 +45,25 @@ def login_amazon(session,email,password) :
     session.post(main_url,data=payload,cookies=cookies)    # not storing return value
 
 
-def get_search_results(session,query) :
-    ''' This function returns results of a search query as a list of soup results. 
-        session is an HTML session.
-        query is the text to search for. '''
+def session_init(menu_choice):
 
-    search_url = f"https://www.amazon.in/s?k={query}&i=aps&ref=nb_sb_ss_ts-doa-p_2_2&crid=OYVDLPMKGY95&sprefix=Ki,aps,28"
+    credfile = "Amazon_ID.txt"
+    email,password = getCredentials(credfile)
 
-    res = session.get(search_url,allow_redirects=True).text
-    soup = BeautifulSoup(res,'lxml')
-    results = soup.find_all("a",class_="a-link-normal s-underline-text s-underline-link-text s-link-style a-text-normal")
-    links = ["http://www.amazon.in"+result['href'] for result in results]
+    with requests.Session() as session :
 
-    obj_list = []
-    for link in links :
-        obj_list.append(search_result(link))
+        # login into amazon. session object is sent as a reference so no need of return object
+        login_amazon(session,email,password)
 
-    return obj_list
+        if menu_choice == '1' :
+            search_menu(session)
+
+        elif menu_choice == '2' :
+            product_details_menu(session)
+
+        elif menu_choice == '3' :
+            price_trend_menu(session)
+
+        else :
+            print("Error. Aborting ... ")
+            exit()

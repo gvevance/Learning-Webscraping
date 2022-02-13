@@ -85,19 +85,5 @@ class search_result :
 
 
     def extract_product_details(self,soup):
+        # todo : code for product details
         pass
-
-# <div data-hook="total-review-count" class="a-row a-spacing-medium averageStarRatingNumerical"><span class="a-size-base a-color-secondary"><!--TODO: Replace this string with arp-x-ratings 5/22/19 (ShopperExp-5143)-->
-            # 34 global ratings</span></div>
-
-# <div class="a-spacing-base" id="mir-layout-DELIVERY_BLOCK-slot-DELIVERY_MESSAGE">
-
-#     FREE Delivery by <b>
-
-# Thursday, Feb 17
-# </b>
-
-#  for Prime members
-
-# <br>
-# <a href="/gp/help/customer/display.html/ref=ftinfo_dp_?ie=UTF8&amp;pop-up=1&amp;nodeId=200534000" target="AmazonHelp" onclick="return amz_js_PopWin(this.href,'AmazonHelp','width=550,height=550,resizable=1,scrollbars=1,toolbar=0,status=0');">Details</a></div>

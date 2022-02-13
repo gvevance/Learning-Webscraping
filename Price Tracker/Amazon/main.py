@@ -1,30 +1,24 @@
 # search prices in Amazon
 
-import requests
+from helper import session_init
 
-from helper import getCredentials
-from helper import login_amazon
-from helper import get_search_results
 
-credfile = "Amazon_ID.txt"
+def main() :
+    
+    print("\nAmazon Price Tracker\n")
+    print("1. Search for product \n2. Get details by link \n3. Price trend by link \n4. Exit \n")
+    menu_choice = input("Enter option : ")
 
-email,password = getCredentials(credfile)
+    if menu_choice in ['1','2','3'] :
+        session_init(menu_choice)
 
-with requests.Session() as session :
+    elif menu_choice == '4' :
+        exit()
 
-    # login into amazon. session object is sent as a reference so no need of return object
-    login_amazon(session,email,password)
+    else :
+        print("Wrong option enetered. Aborting ... ")
+        exit()
 
-    # searching
-    query = input("Enter search query : ")   
-    result_obj_list = get_search_results(session,query)
 
-    for i in result_obj_list :
-        soup = i.get_soup(session)
-        print()
-        print(i.extract_title(soup))
-        print(i.extract_rating(soup))
-        print(i.extract_price(soup))
-        print(i.extract_review_count(soup))
-        print(i.extract_deliver_by(soup))
-
+if __name__ == "__main__" :
+    main()
