@@ -19,7 +19,7 @@ def getCredentials(credfile):
 
 def login_amazon(session,email,password) :
     ''' login into Amazon. No return object.
-        session is an HTML session.
+        session is an HTTP requests session.
         email and password are the corresponding strings of email/phone number and password.'''
 
     main_url = "https://www.amazon.in/ap/signin"

@@ -2,7 +2,7 @@
 
 from bs4 import BeautifulSoup
 
-class search_result :
+class search_result_class :
 
 
     def __init__(self,link) :

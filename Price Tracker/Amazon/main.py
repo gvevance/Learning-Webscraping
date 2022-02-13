@@ -16,7 +16,7 @@ def main() :
         exit()
 
     else :
-        print("Wrong option enetered. Aborting ... ")
+        print("Wrong option entered. Aborting ... ")
         exit()
 
 

@@ -7,7 +7,7 @@ from classes import *
 
 def get_search_results(session,query) :
     ''' This function returns results of a search query as a list of soup results. 
-        session is an HTML session.
+        session is an HTTP requests session.
         query is the text to search for. '''
 
     search_url = f"https://www.amazon.in/s?k={query}&i=aps&ref=nb_sb_ss_ts-doa-p_2_2&crid=OYVDLPMKGY95&sprefix=Ki,aps,28"
@@ -19,7 +19,7 @@ def get_search_results(session,query) :
 
     obj_list = []
     for link in links :
-        obj_list.append(search_result(link))
+        obj_list.append(search_result_class(link))
 
     return obj_list
 
@@ -32,8 +32,9 @@ def search_menu(session):
 
     for i in result_obj_list :
         
-        soup = i.get_soup(session)
+        # print("hi")
         print()
+        soup = i.get_soup(session)
         print(i.extract_title(soup))
         print(i.extract_rating(soup))
         print(i.extract_price(soup))
