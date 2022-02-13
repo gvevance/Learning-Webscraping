@@ -26,4 +26,5 @@ with requests.Session() as session :
         print(i.extract_rating(soup))
         print(i.extract_price(soup))
         print(i.extract_review_count(soup))
+        print(i.extract_deliver_by(soup))
 
