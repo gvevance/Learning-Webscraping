@@ -1,7 +1,5 @@
 # class definitions
 
-main_url = "http://www.amazon.in"
-
 from bs4 import BeautifulSoup
 
 class search_result :
@@ -12,7 +10,7 @@ class search_result :
 
 
     def get_soup(self,session):
-        res = session.get(main_url+self.link).text
+        res = session.get(self.link).text
         soup = BeautifulSoup(res,'lxml')
         return soup
 
@@ -57,8 +55,16 @@ class search_result :
         return price
 
     def extract_review_count(self,soup):
-        pass
+        try :
+            review_count = soup.find("div",{"data-hook":"total-review-count"}).find("span", class_="a-size-base a-color-secondary").text.strip()
 
+        except AttributeError:
+            return "Rating not found."
+        
+        except :
+            return "Unknown error in extracting product review count."
+        
+        return review_count
 
     def extract_deliver_by(self,soup):
         pass
@@ -66,3 +72,6 @@ class search_result :
 
     def extract_product_details(self,soup):
         pass
+
+# <div data-hook="total-review-count" class="a-row a-spacing-medium averageStarRatingNumerical"><span class="a-size-base a-color-secondary"><!--TODO: Replace this string with arp-x-ratings 5/22/19 (ShopperExp-5143)-->
+            # 34 global ratings</span></div>

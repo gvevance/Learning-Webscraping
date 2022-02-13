@@ -21,8 +21,9 @@ with requests.Session() as session :
 
     for i in result_obj_list :
         soup = i.get_soup(session)
-        print(i.link)
+        print()
         print(i.extract_title(soup))
         print(i.extract_rating(soup))
         print(i.extract_price(soup))
+        print(i.extract_review_count(soup))
 

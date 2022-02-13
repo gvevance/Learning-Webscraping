@@ -51,7 +51,7 @@ def get_search_results(session,query) :
     res = session.get(search_url,allow_redirects=True).text
     soup = BeautifulSoup(res,'lxml')
     results = soup.find_all("a",class_="a-link-normal s-underline-text s-underline-link-text s-link-style a-text-normal")
-    links = [result['href'] for result in results]
+    links = ["http://www.amazon.in"+result['href'] for result in results]
 
     obj_list = []
     for link in links :
