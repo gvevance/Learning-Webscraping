@@ -2,7 +2,8 @@
 
 from bs4 import BeautifulSoup
 
-from classes import *
+from classes import search_result_class
+from helper import print_details
 
 
 def get_search_results(session,query) :
@@ -32,11 +33,5 @@ def search_menu(session):
 
     for i in result_obj_list :
         
-        # print("hi")
         print()
-        soup = i.get_soup(session)
-        print(i.extract_title(soup))
-        print(i.extract_rating(soup))
-        print(i.extract_price(soup))
-        print(i.extract_review_count(soup))
-        print(i.extract_deliver_by(soup))
+        print_details(i,session)

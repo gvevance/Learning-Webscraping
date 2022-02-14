@@ -1,6 +1,7 @@
 # class definitions
 
 from bs4 import BeautifulSoup
+import webbrowser
 
 class search_result_class :
 
@@ -77,7 +78,7 @@ class search_result_class :
         
         except AttributeError:
             return "Delivery date not found."
-        
+
         except :
             return "Unknown error in extracting product delivery date."
         
@@ -87,3 +88,7 @@ class search_result_class :
     def extract_product_details(self,soup):
         # todo : code for product details
         pass
+
+
+    def goto_link(self):
+        webbrowser.open_new_tab(self.link)

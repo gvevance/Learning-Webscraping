@@ -1,12 +1,12 @@
 # search prices in Amazon
 
-from helper import session_init
+from menu_init import session_init
 
 
 def main() :
     
     print("\nAmazon Price Tracker\n")
-    print("1. Search for product \n2. Get details by link \n3. Price trend by link \n4. Exit \n")
+    print("1. Search for product \n2. Get details by link \n3. Price history by link \n4. Exit \n")
     menu_choice = input("Enter option : ")
 
     if menu_choice in ['1','2','3'] :
