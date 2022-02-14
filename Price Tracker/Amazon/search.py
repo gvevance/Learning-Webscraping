@@ -34,4 +34,4 @@ def search_menu(session):
     for i in result_obj_list :
         
         print()
-        print_details(i,session)
+        print_details(i,session,True)

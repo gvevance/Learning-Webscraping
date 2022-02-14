@@ -10,16 +10,12 @@ def print_details(obj,session,verbose = False):
     price = obj.extract_price(soup)
     review_count = obj.extract_review_count(soup)
     
-    print(title)
-    print(rating)
-    print(price)
-    print(review_count)
-    print(del_date)
-
-            
-    if verbose :
-        if  del_date == "Delivery date not found." or price == "Price not found." or \
-                rating == "Rating not found." or review_count == "Review count not found." :
-                
-            obj.goto_link()
-            input()
+    print(f"\n{title}")
+    print(f"Rating : {rating}")
+    print(f"Price : {price}")
+    print(f"Review count : {review_count}")
+    print(f"Delivery date : {del_date}")
+  
+    go = input("\nDo you want to go to the Amazon listing ? (yes/NO) ")
+    if go == "yes" :
+        obj.goto_link()
