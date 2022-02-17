@@ -52,7 +52,15 @@ def session_init(menu_choice):
     with requests.Session() as session :
 
         # login into amazon. session object is sent as a reference so no need of return object
-        login_amazon(session,email,password)
+        print("\nLogging into Amazon.")
+        try :
+            login_amazon(session,email,password)
+            print("Login successful.")
+
+        except :
+            continue_nologin = input("Amazon login error. Continue without logging in ? (YES/no) ? ")
+            if continue_nologin == "no" :
+                exit()
 
         if menu_choice == '1' :
             search_menu(session)
