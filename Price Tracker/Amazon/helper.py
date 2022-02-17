@@ -1,7 +1,7 @@
 # helper function
 
 
-def print_details(obj,session,verbose = False):
+def print_details(obj,session):
 
     soup = obj.get_soup(session)
     title = obj.extract_title(soup)

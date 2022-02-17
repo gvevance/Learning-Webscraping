@@ -12,7 +12,7 @@ def main() :
     if menu_choice in ['1','2','3'] :
         session_init(menu_choice)
 
-    elif menu_choice == '4' :
+    elif menu_choice == '4':
         exit()
 
     else :
