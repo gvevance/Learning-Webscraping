@@ -29,7 +29,7 @@ def get_search_results(session, query):
 def search_menu(session):
 
     # searching
-    query = input("Enter search query : ")
+    query = input("\nEnter search query : ")
     result_obj_list = get_search_results(session, query)
 
     for i in result_obj_list:

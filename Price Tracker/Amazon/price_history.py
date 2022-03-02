@@ -1,4 +1,5 @@
-#
+# price history functions
+
 import sqlite3
 import pickle
 import requests
@@ -36,6 +37,7 @@ def view_all_from_PH_queue(session) :
 
 
 def price_history_menu(session) :
+
     print("\nPrice history menu\n")
     print("1. Enter product to track queue \n2. Check price of product in track queue \n\
 3. View current price of all products in track queue \n4. Exit")
